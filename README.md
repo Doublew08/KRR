@@ -1,62 +1,47 @@
 # Kotzig–Ringel–Rosa (KRR) Conjecture Formalization in Lean 4
 
-This project aims to provide a complete formalization of the proof of the **Kotzig–Ringel–Rosa (KRR) Conjecture** (also known as the **Graceful Tree Conjecture**) as presented in the paper [*"A proof of the Kotzig–Ringel–Rosa Conjecture"*](https://arxiv.org/abs/2202.03178) by Edinah K. Gnang.
+This project provides a rigorous formalization and verification of the proof for the **Kotzig–Ringel–Rosa (KRR) Conjecture** (Graceful Tree Conjecture), based on the paper [*"A proof of the Kotzig–Ringel–Rosa Conjecture"*](https://arxiv.org/abs/2202.03178) by Edinah K. Gnang.
 
-The conjecture states that every tree has a graceful labeling. This project formalizes the mathematical foundations, the functional reformulation of the labeling problem, and the verification of the labeling construction described in the proof using the Lean 4 theorem prover.
+## Project Goal: Rigorous Verification
 
-## Project Roadmap
+This is a **verification project**. We aim to stress-test the logical chain of the Gnang proof using the Lean 4 theorem prover. 
 
-The formalization is divided into 7 key phases, following the logical structure of the Gnang proof:
+> [!IMPORTANT]
+> **Constraint:** NO `sorry` placeholders are allowed in the final formalization. Every lemma and theorem must be fully proved to ensure the mathematical integrity of the result.
 
-1.  **Phase 1: Foundations** (`Basic.lean`) — ℤₙ^ℤₙ transformation monoid and functional digraphs.
-2.  **Phase 2: Graceful Labeling** (`Graceful.lean`) — Formal definitions of graceful graph labelings.
-3.  **Phase 3: Functional Reformulation** (`FunctionalReformulation.lean`) — Bridging trees to endofunctions.
-4.  **Phase 4: Graceful Expansion** (`GracefulExpansion.lean`) — Theorem 2.1: The core algebraic tool.
-5.  **Phase 5: Polynomial Machinery** (`Polynomial.lean`) — Multivariate polynomial and determinantal constructions.
-6.  **Phase 6: Composition Lemma** (`CompositionLemma.lean`) — The critical contradiction argument.
-7.  **Phase 7: Main Theorem** (`MainTheorem.lean`) — Final assembly of the KRR Conjecture proof.
+## Methodology: Functional Digraphs
 
-## Current Status
+Unlike standard graph theory projects that rely solely on undirected structures, this project adopts the paper's **Functional Reformulation**. We model trees as endofunctions $f: \mathbb{Z}_n \to \mathbb{Z}_n$ and leverage Mathlib's `Digraph` (directed graph) API. This allows us to use algebraic tools like the transformation monoid $\mathbb{Z}_n^{\mathbb{Z}_n}$ and function conjugation.
 
-- [x] Initial project structure and mathlib integration.
-- [x] Detailed implementation plan (7 phases).
-- [x] Repository initialization and GitHub Sync.
-- [/] **Phase 1: Foundations** (In Progress)
-- [ ] Phase 2: Graceful Labeling
-- [ ] Phase 3: Functional Reformulation
-- [ ] Phase 4: Graceful Expansion Theorem
-- [ ] Phase 5: Polynomial Machinery
-- [ ] Phase 6: Composition Lemma
-- [ ] Phase 7: Main Theorem
+## Project Roadmap & Status
 
-## Project Structure
+1.  **Phase 1: Foundations** (`Basic.lean`) — **[COMPLETE]**
+    - ℤₙ^ℤₙ transformation monoid, `FunctionalDigraph` via Mathlib, `IsTreeFunction`.
+2.  **Phase 2: Graceful Labeling** (`Graceful.lean`) — **[COMPLETE]**
+    - Definitions for `edgeLabelSet`, conjugation by relabeling ($\sigma f \sigma^{-1}$), and a **rigorous proof** that constant-zero functions are already gracefully labeled.
+3.  **Phase 3: Functional Reformulation** (`FunctionalReformulation.lean`) — **[IN PROGRESS]**
+    - `IsValidPermutationBasis`, `signFunction`, and the count of valid bases.
+4.  **Phase 4: Graceful Expansion** (`GracefulExpansion.lean`) — [PLANNED]
+    - Theorem 2.1: The core algebraic tool.
+5.  **Phase 5: Polynomial Machinery** (`Polynomial.lean`) — [PLANNED]
+    - Multivariate polynomial and determinantal constructions.
+6.  **Phase 6: Composition Lemma** (`CompositionLemma.lean`) — [PLANNED]
+    - The critical contradiction argument.
+7.  **Phase 7: Main Theorem** (`MainTheorem.lean`) — [PLANNED]
+    - Final assembly of the KRR Conjecture proof.
 
-```text
-KRR/
-├── Basic.lean                      # Foundation: ℤₙ^ℤₙ, functional digraphs
-├── Graceful.lean                   # Graceful labeling definitions  
-├── FunctionalReformulation.lean    # Trees ↔ endofunctions, τ-Zen
-├── GracefulExpansion.lean          # Graceful expansion theorem
-├── TransformationMonoid.lean       # Bounds on edge label counts
-├── CompositionLemma.lean           # The critical composition lemma
-├── MainTheorem.lean                # Final KRR Conjecture proof
-└── Polynomial.lean                 # Polynomial/determinant machinery
-```
+## Current Build Status
 
-## Getting Started
+- [x] Mathlib integration (`v4.29.1`).
+- [x] Basic foundations and Digraph support.
+- [x] Compilable scaffolding for Phases 1-3.
+- [ ] Phase 3 Theorem Proofs.
 
-### Prerequisites
-
-1.  **Lean 4**: Ensure you have Lean 4 installed via `elan`.
-    ```powershell
-    curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
-    ```
-2.  **Visual Studio Code**: Use VS Code with the [Lean 4 extension](https://marketplace.visualstudio.com/items?itemName=leanprover.lean4).
-
-### Building the Project
+## Build Instructions
 
 ```powershell
-lake build
+# Build the entire project
+lake build KRR
 ```
 
 ## References
