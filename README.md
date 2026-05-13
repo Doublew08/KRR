@@ -15,7 +15,7 @@
   <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
-  <img src="https://img.shields.io/badge/sorry%20count-target%3A%200-red" alt="Sorry Count">
+  <img src="https://img.shields.io/badge/sorry%20count-7%20remaining-orange" alt="Sorry Count">
 </p>
 
 ---
@@ -45,12 +45,12 @@ graph TD
 | Phase | Module | Status | Notes |
 | :---: | :--- | :---: | :--- |
 | 1 | `Basic.lean` | ✅ Complete | Transformation monoid, functional digraphs, `IsTreeFunction` |
-| 2 | `Graceful.lean` | ✅ Complete | `edgeLabelSet`, conjugation, **star graphs proved graceful** |
+| 2 | `Graceful.lean` | ✅ Complete | `edgeLabelSet`, conjugation, **all constant functions proved graceful** (induction base case) |
 | 3 | `FunctionalReformulation.lean` | 🚧 In Progress | `IsValidPermutationBasis`, `signFunction` defined; count theorem pending |
-| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement in place |
-| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework, `F_f` placeholder |
-| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement in place |
-| 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final `KRR_Conjecture` statement |
+| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement in place; expansion formula needs proof |
+| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework; `determinantalPolynomial` and quotient-remainder expansion pending |
+| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement in place; `funcDiameter` and core argument pending |
+| 7 | `MainTheorem.lean` | 🔲 Scaffolded | `main_theorem` and `KRR_Conjecture_final` (SimpleGraph bridge) pending |
 
 ## Getting Started
 
