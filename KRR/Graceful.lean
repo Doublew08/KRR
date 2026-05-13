@@ -56,7 +56,7 @@ def IsGracefulFunction (f : Fin n → Fin n) : Prop :=
 
 /-- The complement map `φ(i) = (n-1) - i`. This captures the complementary
 labeling symmetry from eq. (2.5) of the paper. -/
-def complementMap (hn : 0 < n) : Equiv.Perm (Fin n) where
+def complementMap (_hn : 0 < n) : Equiv.Perm (Fin n) where
   toFun i := ⟨n - 1 - i.val, by omega⟩
   invFun i := ⟨n - 1 - i.val, by omega⟩
   left_inv i := by ext; simp; omega
