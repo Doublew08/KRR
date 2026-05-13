@@ -20,4 +20,9 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: true
+          build-args: "--no-build" # We build manually after getting cache
+      - name: Fetch Mathlib cache
+        run: |
+          lake exe cache get
+          lake build KRR
       - uses: leanprover-community/docgen-action@v1
