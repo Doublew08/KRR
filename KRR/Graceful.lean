@@ -124,8 +124,83 @@ induces a classically graceful labeling on its undirected graph. -/
 theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
     (hf_canon : IsCanonicalTreeFunction (by omega) f)
     (hf_grace : IsAlreadyGraceful f) :
-    IsGraceful' (treeGraphOfFunction f) :=
-  sorry
+    IsGraceful' (treeGraphOfFunction f) := by
+  let G := treeGraphOfFunction f
+  let m := n - 1
+  -- 1. Prove edge count is n - 1
+  have h_edge_card : G.edgeFinset.card = m := by
+    let S := (Finset.univ.filter (fun i => i.val > 0)).image (fun i => Quot.mk (Sym2.Rel (Fin n)) (i, f i))
+    have hS : G.edgeFinset = S := by
+      ext e
+      simp only [SimpleGraph.mem_edgeFinset, treeGraphOfFunction, Finset.mem_image, Finset.mem_univ, Finset.mem_filter, true_and]
+      constructor
+      · rintro ⟨u, v, hne, hf, rfl⟩
+        rcases hf with h | h
+        · use u; refine ⟨?_, ?_⟩
+          · rcases Nat.eq_zero_or_pos u.val with hz | hp; swap; exact hp
+            have : u = 0 := Fin.ext hz; rw [this, hf_canon.1] at h; exact (hne h.symm).elim
+          · rw [h, Sym2.eq_swap]; rfl
+        · use v; refine ⟨?_, ?_⟩
+          · rcases Nat.eq_zero_or_pos v.val with hz | hp; swap; exact hp
+            have : v = 0 := Fin.ext hz; rw [this, hf_canon.1] at h; exact (hne h.symm).elim
+          · rw [h]; rfl
+      · rintro ⟨i, hi, rfl⟩
+        refine ⟨i, f i, ?_, Or.inl rfl, rfl⟩
+        · intro heq; have hlt := hf_canon.2 i hi; rw [heq] at hlt; omega
+    rw [hS, Finset.card_image_of_injective]
+    · simp only [Finset.card_filter, Finset.card_univ]; omega
+    · intro i j hi hj heq
+      rw [Sym2.eq_iff] at heq
+      rcases heq with ⟨rfl, _⟩ | ⟨h1, h2⟩
+      · rfl
+      · have hlti := hf_canon.2 i hi
+        have hltj := hf_canon.2 j hj
+        rw [h1] at hltj; rw [h2] at hlti; omega
+  -- 2. Provide the labeling: id
+  refine ⟨fun v => v.val, Fin.val_injective, ?_, ?_⟩
+  · intro v; rw [h_edge_card]; exact v.isLt.le_sub_one
+  -- 3. Show edge labels cover {1, ..., n-1}
+  rw [h_edge_card]
+  ext k
+  simp only [Finset.mem_image, SimpleGraph.mem_edgeFinset, treeGraphOfFunction, Finset.mem_Icc]
+  constructor
+  · rintro ⟨e, he, rfl⟩
+    rw [Sym2.lift_mk]
+    obtain ⟨u, v, hne, hf, rfl⟩ := he
+    rcases hf with rfl | rfl
+    · have hpos : u.val > 0 := by
+        rcases Nat.eq_zero_or_pos u.val with hz | hp; swap; exact hp
+        have : u = 0 := Fin.ext hz; rw [this, hf_canon.1] at hne; exact (hne rfl).elim
+      have hlt := hf_canon.2 u hpos; omega
+    · have hpos : v.val > 0 := by
+        rcases Nat.eq_zero_or_pos v.val with hz | hp; swap; exact hp
+        have : v = 0 := Fin.ext hz; rw [this, hf_canon.1] at hne; exact (hne rfl).elim
+      have hlt := hf_canon.2 v hpos; omega
+  · intro hk
+    have : k ∈ (Finset.univ.image (fun i : Fin n => (↑(f i).val - ↑i.val : ℤ).natAbs)) := by
+      let img := (Finset.univ.image (fun i : Fin n => (↑(f i).val - ↑i.val : ℤ).natAbs))
+      have hsub : img ⊆ Finset.range n := by
+        intro x hx; simp only [img, Finset.mem_image, Finset.mem_univ, true_and] at hx
+        obtain ⟨i, rfl⟩ := hx; simp only [Finset.mem_range]
+        have h1 := (f i).isLt
+        have h2 := i.isLt
+        omega
+      have heq : img = Finset.range n := by
+        apply Finset.eq_of_subset_of_card_le hsub
+        rw [hf_grace, Finset.card_range]
+      change k ∈ img; rw [heq]; simp only [Finset.mem_range]; omega
+    obtain ⟨i, hi_k⟩ : ∃ i, (↑(f i).val - ↑i.val : ℤ).natAbs = k := by
+      simp only [Finset.mem_image, Finset.mem_univ, true_and] at this; exact this
+    have hi : i.val > 0 := by
+      rcases Nat.eq_zero_or_pos i.val with hz | hp; swap; exact hp
+      exfalso; have : i = ⟨0, by omega⟩ := Fin.ext hz
+      rw [this, hf_canon.1] at hi_k; simp only [Nat.cast_zero, sub_self, Int.natAbs_zero] at hi_k
+      rw [← hi_k] at hk; omega
+    refine ⟨Quot.mk _ (i, f i), ?_, ?_⟩
+    · rw [SimpleGraph.mem_edgeFinset]
+      exact ⟨by intro heq; have hlt := hf_canon.2 i hi; rw [heq] at hlt; omega, Or.inl rfl⟩
+    · rw [Sym2.lift_mk, ← Int.natAbs_neg (↑i.val - ↑(f i).val), neg_sub]
+      exact hi_k
 
 /-- **The KRR Conjecture** (Graceful Tree Conjecture).
 Every tree admits a graceful labeling.

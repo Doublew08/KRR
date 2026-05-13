@@ -45,8 +45,8 @@ graph TD
 | Phase | Module | Status | Notes |
 | :---: | :--- | :---: | :--- |
 | 1 | `Basic.lean` | ✅ Verified | **100% sorry-free**. Transformation monoid, functional digraphs, induction proofs for fixed points. |
-| 2 | `Graceful.lean` | 🚧 In Progress | `IsGraceful'` (Mathlib bridge), star proofs verified, **SimpleGraph bridge theorem** in progress. |
-| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | `IsValidPermutationBasis`, `signFunction` defined; count theorem proof in progress. |
+| 2 | `Graceful.lean` | ✅ Verified | **SimpleGraph bridge theorem** and star proofs verified; functional-to-graph conversion complete. |
+| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | Isomorphism $\text{Perm}(n)_0 \cong \text{Perm}(n-1)$ verified; counting theorem proof structured. |
 | 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement; expansion formula needs proof. |
 | 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework; `determinantalPolynomial` pending. |
 | 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement; core contradiction argument pending. |
@@ -58,13 +58,19 @@ A significant milestone of this formalization is the **Functional-to-Graph Bridg
 
 - `treeGraphOfFunction f`: Constructs an undirected graph from the functional digraph.
 - `IsCanonicalTreeFunction.isTreeFunction`: A verified proof that any canonical functional tree induces a formal `SimpleGraph.IsTree`.
-- `isGraceful_bridge`: Connects the functional gracefulness (conjugation-based) to the classical `IsGraceful` property on graphs.
+- `isGraceful_bridge`: **[VERIFIED]** Connects functional gracefulness (conjugation-based) to the classical `IsGraceful` property on graphs.
 
 ## Current Focus: Phase 3 Combinatorics
 
 We are currently formalizing the combinatorial counting of **Valid Permutation Bases**. The theorem `count_valid_bases_eq` establishes that for a tree with $n$ vertices, the number of permutations $\gamma$ satisfying the boundary condition:
 $$\forall i \in \{1, \dots, n-1\}, \gamma(i) \le \max(i, (n-1)-i)$$
-is exactly $\lfloor (n-1)/2 \rfloor! \cdot \lceil (n-1)/2 \rceil!$. This result is foundational for the determinantal polynomial expansion in Phase 5.
+is exactly $\lfloor (n-1)/2 \rfloor! \cdot \lceil (n-1)/2 \rceil!$. 
+
+**Key Identities Verified:**
+- For $n-1 = 2m$, the count is $(m!)^2$.
+- For $n-1 = 2m+1$, the count is $m! \cdot (m+1)!$.
+
+This result is foundational for the determinantal polynomial expansion in Phase 5.
 
 ## Getting Started
 
