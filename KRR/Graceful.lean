@@ -81,12 +81,11 @@ theorem constZero_edgeLabelSet (hn : 0 < n) :
 /-- Constant-zero function is already gracefully labeled. -/
 theorem constZero_isAlreadyGraceful (hn : 0 < n) :
     IsAlreadyGraceful (constZero hn) := by
-  unfold IsAlreadyGraceful edgeLabelSet constZero
-  simp only [CharP.cast_eq_zero, zero_sub]
+  simp only [IsAlreadyGraceful, edgeLabelSet, constZero]
   rw [Finset.card_image_of_injective]
   · exact Finset.card_fin n
   · intro a b hab
-    simp only [CharP.cast_eq_zero, zero_sub] at hab
+    simp only [Int.natAbs_neg, Int.natAbs_natCast] at hab
     exact Fin.ext (by omega)
 
 /-- Any constant function is graceful (possibly after conjugation). -/
@@ -99,19 +98,34 @@ theorem const_isGraceful (hn : 0 < n) (c : Fin n) :
   rw [hconj]
   exact constZero_isAlreadyGraceful hn
 
+lemma natAbs_sub_comm (a b : ℕ) : 
+    Int.natAbs ((a : ℤ) - b) = Int.natAbs ((b : ℤ) - a) := by
+  rw [← Int.natAbs_neg, neg_sub]
+
 /-- Graceful labeling of a `SimpleGraph`: an injective vertex labeling
 `f : V → {0,...,m}` where `m = |E(G)|` such that the induced edge labels
 `{|f(u) - f(v)| : {u,v} ∈ E(G)}` are distinct and cover `{1,...,m}`.
 This is the classical statement used in the final KRR theorem. -/
 def IsGraceful' {V : Type*} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
+    (G : SimpleGraph V) [inst : DecidableRel G.Adj] : Prop :=
   let m := G.edgeFinset.card
   ∃ f : V → ℕ,
     Function.Injective f ∧
     (∀ v, f v ≤ m) ∧
     G.edgeFinset.image (fun e =>
       e.lift ⟨fun u v => Int.natAbs ((f u : ℤ) - f v),
-              fun u v => by simp only; omega⟩) = Finset.Icc 1 m
+              fun u v => natAbs_sub_comm (f u) (f v)⟩) = Finset.Icc 1 m
+
+instance (f : Fin n → Fin n) : DecidableRel (treeGraphOfFunction f).Adj :=
+  fun u v => by unfold treeGraphOfFunction; infer_instance
+
+/-- **Bridge Theorem**: A canonical tree function that is functionally graceful
+induces a classically graceful labeling on its undirected graph. -/
+theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
+    (hf_canon : IsCanonicalTreeFunction (by omega) f)
+    (hf_grace : IsAlreadyGraceful f) :
+    IsGraceful' (treeGraphOfFunction f) :=
+  sorry
 
 /-- **The KRR Conjecture** (Graceful Tree Conjecture).
 Every tree admits a graceful labeling.

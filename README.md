@@ -15,7 +15,7 @@
   <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
-  <img src="https://img.shields.io/badge/sorry%20count-7%20remaining-orange" alt="Sorry Count">
+  <img src="https://img.shields.io/badge/sorry%20count-9%20remaining-orange" alt="Sorry Count">
 </p>
 
 ---
@@ -44,13 +44,27 @@ graph TD
 
 | Phase | Module | Status | Notes |
 | :---: | :--- | :---: | :--- |
-| 1 | `Basic.lean` | ✅ Complete | Transformation monoid, functional digraphs, `IsTreeFunction` |
-| 2 | `Graceful.lean` | ✅ Complete | `edgeLabelSet`, conjugation, **all constant functions proved graceful** (induction base case) |
-| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | `IsValidPermutationBasis`, `signFunction` defined; count theorem pending |
-| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement in place; expansion formula needs proof |
-| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework; `determinantalPolynomial` and quotient-remainder expansion pending |
-| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement in place; `funcDiameter` and core argument pending |
-| 7 | `MainTheorem.lean` | 🔲 Scaffolded | `main_theorem` and `KRR_Conjecture_final` (SimpleGraph bridge) pending |
+| 1 | `Basic.lean` | ✅ Verified | **100% sorry-free**. Transformation monoid, functional digraphs, induction proofs for fixed points. |
+| 2 | `Graceful.lean` | 🚧 In Progress | `IsGraceful'` (Mathlib bridge), star proofs verified, **SimpleGraph bridge theorem** in progress. |
+| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | `IsValidPermutationBasis`, `signFunction` defined; count theorem proof in progress. |
+| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement; expansion formula needs proof. |
+| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework; `determinantalPolynomial` pending. |
+| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement; core contradiction argument pending. |
+| 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final assembly of phases into the Graceful Tree Conjecture. |
+
+## The Mathlib Bridge
+
+A significant milestone of this formalization is the **Functional-to-Graph Bridge**. We provide a formal conversion from endofunctions $f : \text{Fin } n \to \text{Fin } n$ to Mathlib's `SimpleGraph` API:
+
+- `treeGraphOfFunction f`: Constructs an undirected graph from the functional digraph.
+- `IsCanonicalTreeFunction.isTreeFunction`: A verified proof that any canonical functional tree induces a formal `SimpleGraph.IsTree`.
+- `isGraceful_bridge`: Connects the functional gracefulness (conjugation-based) to the classical `IsGraceful` property on graphs.
+
+## Current Focus: Phase 3 Combinatorics
+
+We are currently formalizing the combinatorial counting of **Valid Permutation Bases**. The theorem `count_valid_bases_eq` establishes that for a tree with $n$ vertices, the number of permutations $\gamma$ satisfying the boundary condition:
+$$\forall i \in \{1, \dots, n-1\}, \gamma(i) \le \max(i, (n-1)-i)$$
+is exactly $\lfloor (n-1)/2 \rfloor! \cdot \lceil (n-1)/2 \rceil!$. This result is foundational for the determinantal polynomial expansion in Phase 5.
 
 ## Getting Started
 
