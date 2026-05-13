@@ -11,9 +11,13 @@ This is a **verification project**. We aim to stress-test the logical chain of t
 > [!IMPORTANT]
 > **Constraint:** NO `sorry` placeholders are allowed in the final formalization. Every lemma and theorem must be fully proved to ensure the mathematical integrity of the result.
 
-## Methodology: Functional Digraphs
+## Mathematical Context
 
-Unlike standard graph theory projects that rely solely on undirected structures, this project adopts the paper's **Functional Reformulation**. We model trees as endofunctions $f: \mathbb{Z}_n \to \mathbb{Z}_n$ and leverage Mathlib's `Digraph` (directed graph) API. This allows us to use algebraic tools like the transformation monoid $\mathbb{Z}_n^{\mathbb{Z}_n}$ and function conjugation.
+The **Kotzig–Ringel–Rosa Conjecture** states that every tree with $m$ edges admits a **graceful labeling**: an injective assignment of labels $\{0, \dots, m\}$ to its vertices such that the induced edge labels $|f(u) - f(v)|$ are all distinct and cover the set $\{1, \dots, m\}$.
+
+This formalization follows Edinah K. Gnang's approach, which reformulates the problem using the **Transformation Monoid** $\mathbb{Z}_n^{\mathbb{Z}_n}$. A tree is represented by a parent function $f$ whose functional digraph is a rooted tree. The proof then proceeds via a contradiction argument involving multivariate polynomials and the non-vanishing of certain canonical representatives.
+
+## Methodology: Functional Digraphs
 
 ## Architecture
 
@@ -53,6 +57,19 @@ To build the project and verify the current progress:
 ```powershell
 # Build the entire project
 lake build KRR
+```
+
+## Directory Structure
+
+```text
+KRR/
+├── Basic.lean                    # Monoid foundations & Functional Digraphs
+├── Graceful.lean                 # Labeling definitions & Star graph proofs
+├── FunctionalReformulation.lean  # Permutation bases (eq. 2.6)
+├── GracefulExpansion.lean        # Theorem 2.1 (Algebraic expansion)
+├── Polynomial.lean               # Multivariate machinery & F_f
+├── CompositionLemma.lean         # Lemma 3.2 (The key induction step)
+└── MainTheorem.lean              # Assembly of the KRR proof
 ```
 
 ## References
