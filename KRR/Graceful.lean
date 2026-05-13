@@ -99,6 +99,20 @@ theorem const_isGraceful (hn : 0 < n) (c : Fin n) :
   rw [hconj]
   exact constZero_isAlreadyGraceful hn
 
+/-- Graceful labeling of a `SimpleGraph`: an injective vertex labeling
+`f : V → {0,...,m}` where `m = |E(G)|` such that the induced edge labels
+`{|f(u) - f(v)| : {u,v} ∈ E(G)}` are distinct and cover `{1,...,m}`.
+This is the classical statement used in the final KRR theorem. -/
+def IsGraceful' {V : Type*} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
+  let m := G.edgeFinset.card
+  ∃ f : V → ℕ,
+    Function.Injective f ∧
+    (∀ v, f v ≤ m) ∧
+    G.edgeFinset.image (fun e =>
+      e.lift ⟨fun u v => Int.natAbs ((f u : ℤ) - f v),
+              fun u v => by simp only; omega⟩) = Finset.Icc 1 m
+
 /-- **The KRR Conjecture** (Graceful Tree Conjecture).
 Every tree admits a graceful labeling.
 
