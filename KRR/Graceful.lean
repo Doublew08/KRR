@@ -82,11 +82,11 @@ theorem constZero_edgeLabelSet (hn : 0 < n) :
 theorem constZero_isAlreadyGraceful (hn : 0 < n) :
     IsAlreadyGraceful (constZero hn) := by
   unfold IsAlreadyGraceful edgeLabelSet constZero
-  simp
+  simp only [CharP.cast_eq_zero, zero_sub]
   rw [Finset.card_image_of_injective]
   · exact Finset.card_fin n
   · intro a b hab
-    simp at hab
+    simp only [CharP.cast_eq_zero, zero_sub] at hab
     exact Fin.ext (by omega)
 
 /-- Any constant function is graceful (possibly after conjugation). -/

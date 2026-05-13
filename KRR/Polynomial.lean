@@ -16,13 +16,13 @@ namespace KRR
 
 variable {n : ℕ}
 
-/-- 
+/--
 The determinantal polynomial F_f associated with a functional digraph G_f.
 F_f(x₀, ..., xₙ₋₁) = det(V · G_f)
 where V is a Vandermonde-like matrix and G_f encodes the edges.
 -/
 -- We use MvPolynomial (Fin n) ℤ to represent polynomials in n variables.
-noncomputable def determinantalPolynomial (f : Fin n → Fin n) : MvPolynomial (Fin n) ℤ :=
+noncomputable def determinantalPolynomial (_f : Fin n → Fin n) : MvPolynomial (Fin n) ℤ :=
   -- Placeholder for the actual det construction.
   -- The paper defines this in Section 2.2.
   0 
