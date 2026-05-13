@@ -59,11 +59,25 @@ theorem count_valid_bases_eq (hn : 0 < n) (h2 : 2 < n) :
       ∀ i : Fin n, i.val > 0 →
         (γ i).val ≤ i.val ∨ (γ i).val ≤ (n - 1) - i.val)).card =
     Nat.factorial ((n - 1) / 2) * Nat.factorial (((n - 1) + 1) / 2) := by
-  -- We'll use the product of bounds formula for permutations with restricted ranges.
-  -- Let M_i = max(i, (n-1)-i). The condition is γ(i) ≤ M_i for i > 0.
+  let k := n - 1
+  -- 1. Permutations of Fin n fixing 0 are isomorphic to permutations of Fin k.
+  -- We'll use this to simplify the counting to the set {1, ..., k}.
+  let S := (Finset.univ.filter (fun γ : Equiv.Perm (Fin n) =>
+      γ ⟨0, hn⟩ = ⟨0, hn⟩ ∧
+      ∀ i : Fin n, i.val > 0 →
+        (γ i).val ≤ i.val ∨ (γ i).val ≤ (n - 1) - i.val))
+  let T := (Finset.univ.filter (fun γ : Equiv.Perm (Fin k) =>
+      ∀ i : Fin k, (γ i).val + 1 ≤ max (i.val + 1) (k - (i.val + 1))))
+  
+  have h_iso : S.card = T.card := by
+    -- Construct an equivalence between the sets
+    -- let e : Equiv {γ : Equiv.Perm (Fin n) // γ ⟨0, hn⟩ = ⟨0, hn⟩} (Equiv.Perm (Fin k)) := ...
+    sorry 
+  
+  -- 2. Use the product of bounds formula for permutations with restricted ranges.
   -- The number of such permutations is ∏ (M'_j - (j-1)) where M' is sorted M.
   -- We've verified this formula matches the factorial product.
-  sorry -- Proof in progress to meet the 'no sorry' requirement.
+  exact sorry
 
 end KRR
 
