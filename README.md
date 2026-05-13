@@ -13,31 +13,40 @@ This is a **verification project**. We aim to stress-test the logical chain of t
 
 Unlike standard graph theory projects that rely solely on undirected structures, this project adopts the paper's **Functional Reformulation**. We model trees as endofunctions $f: \mathbb{Z}_n \to \mathbb{Z}_n$ and leverage Mathlib's `Digraph` (directed graph) API. This allows us to use algebraic tools like the transformation monoid $\mathbb{Z}_n^{\mathbb{Z}_n}$ and function conjugation.
 
+## Architecture
+
+The proof follows a specific logical chain from functional foundations to a polynomial-based contradiction argument:
+
+```mermaid
+graph TD
+    A["Section 2.1: Functional Reformulation<br/>Trees ↔ Functions in ℤₙ^ℤₙ"] --> B["Section 2.2: Graceful Expansion Theorem<br/>Characterize graceful labelings via<br/>permutation bases γ, sign functions 𝔰"]
+    B --> C["Section 3: Transformation Monoid Properties<br/>Upper/lower bounds on distinct edge labels"]
+    C --> D["Composition Lemma (Lemma 3.2)<br/>max distinct labels of f² ≤ max of f<br/>(for trees with diameter ≥ 3)"]
+    D --> E["Main Theorem (Theorem 3.1)<br/>Iterated composition → constant function<br/>Constant function = star = graceful ✓"]
+```
+
 ## Project Roadmap & Status
 
-1.  **Phase 1: Foundations** (`Basic.lean`) — **[COMPLETE]**
-    - ℤₙ^ℤₙ transformation monoid, `FunctionalDigraph` via Mathlib, `IsTreeFunction`.
-2.  **Phase 2: Graceful Labeling** (`Graceful.lean`) — **[COMPLETE]**
-    - Definitions for `edgeLabelSet`, conjugation by relabeling ($\sigma f \sigma^{-1}$), and a **rigorous proof** that constant-zero functions are already gracefully labeled.
-3.  **Phase 3: Functional Reformulation** (`FunctionalReformulation.lean`) — **[IN PROGRESS]**
-    - `IsValidPermutationBasis`, `signFunction`, and the count of valid bases.
-4.  **Phase 4: Graceful Expansion** (`GracefulExpansion.lean`) — [PLANNED]
-    - Theorem 2.1: The core algebraic tool.
-5.  **Phase 5: Polynomial Machinery** (`Polynomial.lean`) — [PLANNED]
-    - Multivariate polynomial and determinantal constructions.
-6.  **Phase 6: Composition Lemma** (`CompositionLemma.lean`) — [PLANNED]
-    - The critical contradiction argument.
-7.  **Phase 7: Main Theorem** (`MainTheorem.lean`) — [PLANNED]
-    - Final assembly of the KRR Conjecture proof.
+| Phase | Module | Status | Highlights |
+| :--- | :--- | :--- | :--- |
+| **1** | `Basic.lean` | ✅ COMPLETE | Transformation monoid, Functional Digraphs, Rooted Trees. |
+| **2** | `Graceful.lean` | ✅ COMPLETE | `edgeLabelSet`, conjugation. **Star graphs proved graceful.** |
+| **3** | `FunctionalReformulation.lean` | 🚧 IN PROGRESS | `IsValidPermutationBasis`, `signFunction`. |
+| **4** | `GracefulExpansion.lean` | 📅 PLANNED | Theorem 2.1 (Core algebraic tool). |
+| **5** | `Polynomial.lean` | 📅 PLANNED | Multivariate polynomial and determinantal constructions. |
+| **6** | `CompositionLemma.lean` | 📅 PLANNED | The critical contradiction argument. |
+| **7** | `MainTheorem.lean` | 📅 PLANNED | Final assembly of the KRR proof. |
 
 ## Current Build Status
 
-- [x] Mathlib integration (`v4.29.1`).
-- [x] Basic foundations and Digraph support.
-- [x] Compilable scaffolding for Phases 1-3.
-- [ ] Phase 3 Theorem Proofs.
+- [x] **Mathlib integration** (`v4.29.1`).
+- [x] **Functional Foundations** and `Digraph` support.
+- [x] **Scaffolding for Phases 1-3** compiles successfully.
+- [x] **Base Case Proved**: Rigorous proof that constant functions (stars) are graceful.
 
 ## Build Instructions
+
+To build the project and verify the current progress:
 
 ```powershell
 # Build the entire project
