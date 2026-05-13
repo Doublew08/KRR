@@ -1,3 +1,5 @@
+![KRR Banner](images/banner.png)
+
 # Kotzig–Ringel–Rosa (KRR) Conjecture Formalization in Lean 4
 
 This project provides a rigorous formalization and verification of the proof for the **Kotzig–Ringel–Rosa (KRR) Conjecture** (Graceful Tree Conjecture), based on the paper [*"A proof of the Kotzig–Ringel–Rosa Conjecture"*](https://arxiv.org/abs/2202.03178) by Edinah K. Gnang.
@@ -56,6 +58,15 @@ lake build KRR
 ## References
 
 *   Gnang, E. K. (2022). *A proof of the Kotzig–Ringel–Rosa Conjecture*. [arXiv:2202.03178](https://arxiv.org/abs/2202.03178).
+
+## Contributing
+
+This is an open-source verification project. Contributions are welcome in the following areas:
+- **Refactoring**: Improving the elegance of existing proofs.
+- **Documentation**: Adding more detailed mathematical context to Lean files.
+- **Verification**: Identifying potential gaps or suggesting alternative proof paths.
+
+Please ensure all contributions follow the **"No sorry"** mandate.
 
 ## License
 
