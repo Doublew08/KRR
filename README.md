@@ -32,16 +32,16 @@ graph TD
 | **1** | `Basic.lean` | ✅ COMPLETE | Transformation monoid, Functional Digraphs, Rooted Trees. |
 | **2** | `Graceful.lean` | ✅ COMPLETE | `edgeLabelSet`, conjugation. **Star graphs proved graceful.** |
 | **3** | `FunctionalReformulation.lean` | 🚧 IN PROGRESS | `IsValidPermutationBasis`, `signFunction`. |
-| **4** | `GracefulExpansion.lean` | 📅 PLANNED | Theorem 2.1 (Core algebraic tool). |
-| **5** | `Polynomial.lean` | 📅 PLANNED | Multivariate polynomial and determinantal constructions. |
-| **6** | `CompositionLemma.lean` | 📅 PLANNED | The critical contradiction argument. |
-| **7** | `MainTheorem.lean` | 📅 PLANNED | Final assembly of the KRR proof. |
+| **4** | `GracefulExpansion.lean` | ✅ SCAFFOLDED | Theorem 2.1 framework. |
+| **5** | `Polynomial.lean` | ✅ SCAFFOLDED | Multivariate polynomial machinery. |
+| **6** | `CompositionLemma.lean` | ✅ SCAFFOLDED | Lemma 3.2 statement and proof structure. |
+| **7** | `MainTheorem.lean` | ✅ SCAFFOLDED | Final assembly and KRR statement. |
 
 ## Current Build Status
 
 - [x] **Mathlib integration** (`v4.29.1`).
 - [x] **Functional Foundations** and `Digraph` support.
-- [x] **Scaffolding for Phases 1-3** compiles successfully.
+- [x] **Full Project Scaffolding** compiles successfully across all 7 modules.
 - [x] **Base Case Proved**: Rigorous proof that constant functions (stars) are graceful.
 
 ## Build Instructions
