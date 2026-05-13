@@ -1,94 +1,98 @@
 ![KRR Banner](images/banner.png)
 
 <p align="center">
-  <img src="images/logo.png" width="150" alt="KRR Logo">
+  <img src="images/logo.png" width="120" alt="KRR Logo">
 </p>
 
-# Kotzig–Ringel–Rosa (KRR) Conjecture Formalization in Lean 4
+<h1 align="center">KRR Conjecture — Lean 4 Formalization</h1>
 
-This project provides a rigorous formalization and verification of the proof for the **Kotzig–Ringel–Rosa (KRR) Conjecture** (Graceful Tree Conjecture), based on the paper [*"A proof of the Kotzig–Ringel–Rosa Conjecture"*](https://arxiv.org/abs/2202.03178) by Edinah K. Gnang.
+<p align="center">
+  A rigorous formal verification of the <strong>Kotzig–Ringel–Rosa (Graceful Tree) Conjecture</strong><br/>
+  based on <a href="https://arxiv.org/abs/2202.03178">Gnang (2022)</a>, implemented in Lean 4 with Mathlib.
+</p>
 
-## Project Goal: Rigorous Verification
+<p align="center">
+  <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
+  <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
+  <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
+  <img src="https://img.shields.io/badge/sorry%20count-target%3A%200-red" alt="Sorry Count">
+</p>
 
-This is a **verification project**. We aim to stress-test the logical chain of the Gnang proof using the Lean 4 theorem prover. 
+---
 
-> [!IMPORTANT]
-> **Constraint:** NO `sorry` placeholders are allowed in the final formalization. Every lemma and theorem must be fully proved to ensure the mathematical integrity of the result.
+## Overview
 
-## Mathematical Context
+The **Kotzig–Ringel–Rosa (KRR) Conjecture** states that every tree with $m$ edges admits a *graceful labeling*: an injective assignment of labels $\{0, \dots, m\}$ to vertices such that the induced edge labels $|f(u) - f(v)|$ are all distinct and cover $\{1, \dots, m\}$.
 
-The **Kotzig–Ringel–Rosa Conjecture** states that every tree with $m$ edges admits a **graceful labeling**: an injective assignment of labels $\{0, \dots, m\}$ to its vertices such that the induced edge labels $|f(u) - f(v)|$ are all distinct and cover the set $\{1, \dots, m\}$.
+This project is a **verification effort**, not just a formalization scaffold. We independently stress-test the logical chain of Gnang's proof using the Lean 4 theorem prover, with a strict **no `sorry`** policy.
 
-This formalization follows Edinah K. Gnang's approach, which reformulates the problem using the **Transformation Monoid** $\mathbb{Z}_n^{\mathbb{Z}_n}$. A tree is represented by a parent function $f$ whose functional digraph is a rooted tree. The proof then proceeds via a contradiction argument involving multivariate polynomials and the non-vanishing of certain canonical representatives.
+The key insight is a *functional reformulation*: trees are modeled as endofunctions $f : \mathbb{Z}_n \to \mathbb{Z}_n$ whose functional digraph is a rooted tree. Graceful labelings then correspond to conjugations $\sigma f \sigma^{-1}$ with $n$ distinct absolute-difference edge labels. The proof proceeds via iterated composition, driving any tree function toward a constant (star) function, which is proved graceful as the base case.
 
-## Methodology: Functional Digraphs
-
-## Architecture
-
-The proof follows a specific logical chain from functional foundations to a polynomial-based contradiction argument:
+## Proof Architecture
 
 ```mermaid
 graph TD
-    A["Section 2.1: Functional Reformulation<br/>Trees ↔ Functions in ℤₙ^ℤₙ"] --> B["Section 2.2: Graceful Expansion Theorem<br/>Characterize graceful labelings via<br/>permutation bases γ, sign functions 𝔰"]
-    B --> C["Section 3: Transformation Monoid Properties<br/>Upper/lower bounds on distinct edge labels"]
-    C --> D["Composition Lemma (Lemma 3.2)<br/>max distinct labels of f² ≤ max of f<br/>(for trees with diameter ≥ 3)"]
-    D --> E["Main Theorem (Theorem 3.1)<br/>Iterated composition → constant function<br/>Constant function = star = graceful ✓"]
+    A["Basic.lean<br/>ℤₙ^ℤₙ Transformation Monoid<br/>Functional Digraphs"] --> B["Graceful.lean<br/>Graceful labelings via conjugation<br/>★ Stars proved graceful"]
+    B --> C["FunctionalReformulation.lean<br/>Permutation bases γ<br/>Sign function 𝔰_f"]
+    C --> D["GracefulExpansion.lean<br/>Theorem 2.1: Algebraic expansion"]
+    D --> E["Polynomial.lean<br/>Determinantal polynomial F_f<br/>Quotient-remainder expansion"]
+    E --> F["CompositionLemma.lean<br/>Lemma 3.2: max labels(f²) ≤ max labels(f)"]
+    F --> G["MainTheorem.lean<br/>KRR Conjecture ✓"]
 ```
 
-## Project Roadmap & Status
+## Status
 
-| Phase | Module | Status | Highlights |
-| :--- | :--- | :--- | :--- |
-| **1** | `Basic.lean` | ✅ COMPLETE | Transformation monoid, Functional Digraphs, Rooted Trees. |
-| **2** | `Graceful.lean` | ✅ COMPLETE | `edgeLabelSet`, conjugation. **Star graphs proved graceful.** |
-| **3** | `FunctionalReformulation.lean` | 🚧 IN PROGRESS | `IsValidPermutationBasis`, `signFunction`. |
-| **4** | `GracefulExpansion.lean` | ✅ SCAFFOLDED | Theorem 2.1 framework. |
-| **5** | `Polynomial.lean` | ✅ SCAFFOLDED | Multivariate polynomial machinery. |
-| **6** | `CompositionLemma.lean` | ✅ SCAFFOLDED | Lemma 3.2 statement and proof structure. |
-| **7** | `MainTheorem.lean` | ✅ SCAFFOLDED | Final assembly and KRR statement. |
+| Phase | Module | Status | Notes |
+| :---: | :--- | :---: | :--- |
+| 1 | `Basic.lean` | ✅ Complete | Transformation monoid, functional digraphs, `IsTreeFunction` |
+| 2 | `Graceful.lean` | ✅ Complete | `edgeLabelSet`, conjugation, **star graphs proved graceful** |
+| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | `IsValidPermutationBasis`, `signFunction` defined; count theorem pending |
+| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement in place |
+| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework, `F_f` placeholder |
+| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement in place |
+| 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final `KRR_Conjecture` statement |
 
-## Current Build Status
+## Getting Started
 
-- [x] **Mathlib integration** (`v4.29.1`).
-- [x] **Functional Foundations** and `Digraph` support.
-- [x] **Full Project Scaffolding** compiles successfully across all 7 modules.
-- [x] **Base Case Proved**: Rigorous proof that constant functions (stars) are graceful.
+**Prerequisites:** [Lean 4](https://leanprover.github.io/) and [elan](https://github.com/leanprover/elan).
 
-## Build Instructions
+```bash
+# Clone the repository
+git clone https://github.com/Doublew08/KRR.git
+cd KRR
 
-To build the project and verify the current progress:
+# Fetch pre-built Mathlib binaries (saves ~30 min of compilation)
+lake exe cache get
 
-```powershell
-# Build the entire project
+# Build the project
 lake build KRR
 ```
 
-## Directory Structure
+## Repository Layout
 
-```text
-KRR/
-├── Basic.lean                    # Monoid foundations & Functional Digraphs
-├── Graceful.lean                 # Labeling definitions & Star graph proofs
-├── FunctionalReformulation.lean  # Permutation bases (eq. 2.6)
-├── GracefulExpansion.lean        # Theorem 2.1 (Algebraic expansion)
-├── Polynomial.lean               # Multivariate machinery & F_f
-├── CompositionLemma.lean         # Lemma 3.2 (The key induction step)
-└── MainTheorem.lean              # Assembly of the KRR proof
 ```
-
-## References
-
-*   Gnang, E. K. (2022). *A proof of the Kotzig–Ringel–Rosa Conjecture*. [arXiv:2202.03178](https://arxiv.org/abs/2202.03178).
+KRR/
+├── Basic.lean                    # Transformation monoid & functional digraphs
+├── Graceful.lean                 # Graceful labeling definitions & star proof
+├── FunctionalReformulation.lean  # Permutation bases (eq. 2.6 in the paper)
+├── GracefulExpansion.lean        # Graceful Expansion Theorem (Thm. 2.1)
+├── Polynomial.lean               # Multivariate polynomial machinery
+├── CompositionLemma.lean         # Composition Lemma (Lemma 3.2)
+└── MainTheorem.lean              # Main theorem assembly
+```
 
 ## Contributing
 
-This is an open-source verification project. Contributions are welcome in the following areas:
-- **Refactoring**: Improving the elegance of existing proofs.
-- **Documentation**: Adding more detailed mathematical context to Lean files.
-- **Verification**: Identifying potential gaps or suggesting alternative proof paths.
+Contributions are welcome. All contributions must follow the **no `sorry`** mandate — every lemma must be fully proved before merging. Areas where help is most needed:
 
-Please ensure all contributions follow the **"No sorry"** mandate.
+- Proving `count_valid_bases_eq` (Phase 3 — combinatorial argument)
+- Formalizing the determinantal polynomial `F_f` (Phase 5)
+- The Composition Lemma contradiction argument (Phase 6)
+
+## Reference
+
+Gnang, E. K. (2022). *A proof of the Kotzig–Ringel–Rosa Conjecture*. [arXiv:2202.03178](https://arxiv.org/abs/2202.03178).
 
 ## License
 
-This project is licensed under the Apache License 2.0.
+Released under the [Apache 2.0 License](LICENSE).
