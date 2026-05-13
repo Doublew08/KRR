@@ -18,7 +18,7 @@ namespace KRR
 
 variable {n : ℕ}
 
-/-- 
+/--
 Theorem 2.1 (Graceful Expansion):
 Every graceful labeling of a functional digraph admits a unique expansion 
 in terms of a permutation basis γ and a sign function 𝔰_f.
