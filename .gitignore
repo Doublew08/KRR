@@ -1,1 +1,10 @@
 /.lake
+/.lake/*
+/build
+/lean_packages
+.DS_Store
+*.swp
+*.olean
+*.ilean
+*.c
+*.out
