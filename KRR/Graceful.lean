@@ -92,11 +92,12 @@ theorem constZero_isAlreadyGraceful (hn : 0 < n) :
 /-- Any constant function is graceful (possibly after conjugation). -/
 theorem const_isGraceful (hn : 0 < n) (c : Fin n) :
     IsGracefulFunction (fun _ => c) := by
-  -- We need a permutation σ that sends c to 0, then σfσ⁻¹ = constZero
   use Equiv.swap c ⟨0, hn⟩
-  -- After conjugation, the function becomes constantly 0
-  -- (since σ sends c to 0, and σ⁻¹ sends anything to something, but f maps to c, σ maps c to 0)
-  sorry -- TODO: Complete this proof rigorously
+  have hconj : conjugate (fun _ => c) (Equiv.swap c ⟨0, hn⟩) = constZero hn := by
+    ext i
+    simp [conjugate, constZero, Equiv.swap_apply_left]
+  rw [hconj]
+  exact constZero_isAlreadyGraceful hn
 
 /-- **The KRR Conjecture** (Graceful Tree Conjecture).
 Every tree admits a graceful labeling.
