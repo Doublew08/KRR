@@ -302,11 +302,13 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
 
 
 
-    -- By induction on the number of compositions f^[2^k]
-    -- Eventually f^[2^k] is a star tree (identically constant)
-    -- We've proved star trees are graceful in the base case above.
-    -- Composition Lemma (Theorem 3.1) then implies f is graceful.
-    sorry -- Need induction on k such that f^[2^k] is a star.
+  · -- General case using iterative descent
+    intro h_tree
+    -- By induction on m, f^[2^m] eventually becomes a constant function (a star).
+    -- Since stars are graceful and descent preserves gracefulness, f is graceful.
+    sorry
+
+
 
 
 end KRR
