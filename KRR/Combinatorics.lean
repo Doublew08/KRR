@@ -102,9 +102,7 @@ theorem count_injections_le_product {k n : ℕ} (a : Fin k → ℕ) (ha : Monoto
           _ ≤ a (Fin.last k) := ha (Fin.castSucc_le_last j)
       have hS_card : S.card = a (Fin.last k) + 1 := by
         rw [Finset.filter_card]
-        rw [Finset.card_filter]
-        simp [han (Fin.last k)]
-        rw [Finset.card_range]
+        simp only [Finset.card_range]
       have hT_card : T.card = k := by
         rw [Finset.card_image_of_injective]; simp; exact f'.injective
       have : (S \ T).card = S.card - T.card := Finset.card_sdiff hT_sub
@@ -148,7 +146,27 @@ theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) (h
 
 /-- Permutations of α fixing a point are equivalent to permutations of the remaining elements. -/
 def permFixEquiv {α : Type*} [Fintype α] [DecidableEq α] (a : α) :
-    {σ : Equiv.Perm α // σ a = a} ≃ Equiv.Perm {x // x ≠ a} :=
-  sorry
+    {σ : Equiv.Perm α // σ a = a} ≃ Equiv.Perm {x // x ≠ a} where
+  toFun σ := Equiv.Perm.subtypePerm σ.1 (fun x => by
+    rw [Equiv.Perm.apply_eq_iff_eq]; intro h; exact σ.2.symm ▸ h)
+  invFun σ := ⟨Equiv.Perm.extendDomain σ (Equiv.refl {x // x = a}), by
+    simp⟩
+  left_inv σ := by
+    ext x
+    simp
+    split_ifs with h
+    · rcases h with ⟨y, hy, rfl⟩; rfl
+    · rcases σ with ⟨σ, hσ⟩
+      have : x = a := by
+        by_contra hne
+        exact h ⟨⟨x, hne⟩, rfl⟩
+      rw [this]; simp; exact hσ
+  right_inv σ := by
+    ext ⟨x, hx⟩
+    simp
+
+
+
+
 
 end KRR
