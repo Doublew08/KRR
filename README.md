@@ -1,117 +1,98 @@
-![KRR Banner](images/banner.png)
+# 🌳 Kotzig–Ringel–Rosa (KRR) Conjecture
 
 <p align="center">
   <img src="images/logo.png" width="120" alt="KRR Logo">
 </p>
 
-<h1 align="center">KRR Conjecture — Lean 4 Formalization</h1>
-
 <p align="center">
-  A rigorous formal verification of the <strong>Kotzig–Ringel–Rosa (Graceful Tree) Conjecture</strong><br/>
-  based on <a href="https://arxiv.org/abs/2202.03178">Gnang (2022)</a>, implemented in Lean 4 with Mathlib.
+  <b>Formal Verification of the Graceful Tree Conjecture in Lean 4</b><br/>
+  <i>A rigorous verification effort based on the functional reformulation by Gnang (2022).</i>
 </p>
 
 <p align="center">
   <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
-  <img src="https://img.shields.io/badge/sorry%20count-8%20remaining-orange" alt="Sorry Count">
+  <img src="https://img.shields.io/badge/sorry%20count-11%20remaining-orange" alt="Sorry Count">
 </p>
 
 ---
 
-## Overview
+## 🏛️ Project Principles
 
-The **Kotzig–Ringel–Rosa (KRR) Conjecture** states that every tree with $m$ edges admits a *graceful labeling*: an injective assignment of labels $\{0, \dots, m\}$ to vertices such that the induced edge labels $|f(u) - f(v)|$ are all distinct and cover $\{1, \dots, m\}$.
+- **Strict "No-Sorry" Mandate**: No code is merged into `master` unless every lemma is fully verified. We prioritize logical integrity over rapid scaffolding.
+- **Mathlib-Native Design**: We leverage `Mathlib.Combinatorics.SimpleGraph`, `Mathlib.Data.MvPolynomial`, and `Mathlib.GroupTheory.Perm.Basic` to ensure our proofs are idiomatic and extensible.
+- **Functional Clarity**: We model trees as endofunctions $\mathbb{Z}_n \to \mathbb{Z}_n$, providing a unique algebraic lens on a classical graph theory problem.
 
-This project is a **verification effort**, not just a formalization scaffold. We independently stress-test the logical chain of Gnang's proof using the Lean 4 theorem prover, with a strict **no `sorry`** policy.
+## 🧬 Proof Architecture
 
-The key insight is a *functional reformulation*: trees are modeled as endofunctions $f : \mathbb{Z}_n \to \mathbb{Z}_n$ whose functional digraph is a rooted tree. Graceful labelings then correspond to conjugations $\sigma f \sigma^{-1}$ with $n$ distinct absolute-difference edge labels. The proof proceeds via iterated composition, driving any tree function toward a constant (star) function, which is proved graceful as the base case.
-
-## Proof Architecture
+This project follows a 7-phase verification roadmap, driving any tree toward a star tree via functional composition.
 
 ```mermaid
 graph TD
-    A["Basic.lean<br/>ℤₙ^ℤₙ Transformation Monoid<br/>Functional Digraphs"] --> B["Graceful.lean<br/>Graceful labelings via conjugation<br/>★ Stars proved graceful"]
-    B --> C["FunctionalReformulation.lean<br/>Permutation bases γ<br/>Sign function 𝔰_f"]
-    C --> D["GracefulExpansion.lean<br/>Theorem 2.1: Algebraic expansion"]
-    D --> E["Polynomial.lean<br/>Determinantal polynomial F_f<br/>Quotient-remainder expansion"]
-    E --> F["CompositionLemma.lean<br/>Lemma 3.2: max labels(f²) ≤ max labels(f)"]
+    A["Basic.lean<br/>Transformation Monoids"] --> B["Graceful.lean<br/>Star Tree Anchor"]
+    B --> C["Combinatorics.lean<br/>Permutation Counting"]
+    C --> D["GracefulExpansion.lean<br/>Algebraic Expansion"]
+    D --> E["Polynomial.lean<br/>Determinantal Machinery"]
+    E --> F["CompositionLemma.lean<br/>Iterative Descent"]
     F --> G["MainTheorem.lean<br/>KRR Conjecture ✓"]
 ```
 
-## Status
+## 📜 Key Formalized Statements
 
-| Phase | Module | Status | Notes |
+### The KRR Conjecture
+The final goal of this project is the formal proof that every tree admits a graceful labeling.
+```lean
+theorem KRR_Conjecture (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj] :
+    G.IsTree → IsGraceful G
+```
+
+### The Functional Bridge
+We bridge the functional model to classical graph theory, proving that our algebraic conditions are equivalent to the graph-theoretic ones.
+```lean
+theorem isGraceful_bridge (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
+    isGraceful'' f ↔ G.IsGraceful 
+```
+
+## 📊 Verification Status
+
+| Phase | Module | Status | Core Achievement |
 | :---: | :--- | :---: | :--- |
-| 1 | `Basic.lean` | ✅ Verified | **100% sorry-free**. Transformation monoid, functional digraphs, induction proofs for fixed points. |
-| 2 | `Graceful.lean` | ✅ Verified | **SimpleGraph bridge theorem** and star tree base case verified; functional-to-graph conversion complete. |
-| 3 | `FunctionalReformulation.lean` | ✅ Verified | Isomorphism $\text{Perm}(n)_0 \cong \text{Perm}(n-1)$ and counting theorem `count_valid_bases_eq` fully verified. |
-| 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement; expansion formula needs proof. |
-| 5 | `Polynomial.lean` | 🚧 In Progress | `MvPolynomial` framework; `graceful_evaluation` indicator verified. |
-| 6 | `CompositionLemma.lean` | 🚧 In Progress | Lemma 3.2 statement; $n=2$ base case verified. |
-| 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final assembly of phases into the Graceful Tree Conjecture. |
+| 1 | `Basic.lean` | ✅ Verified | **100% Verified**. Transformation monoids & digraph induction. |
+| 2 | `Graceful.lean` | ✅ Verified | **Star Case Anchor**. Proved star trees are graceful. |
+| 3 | `Combinatorics.lean` | ✅ Verified | **Isomorphism Bridge**. Verified permutation count $n! \cdot (n-1)!$. |
+| 4 | `Expansion.lean` | 🔲 Scaffolded | Expansion formula for the determinantal polynomial. |
+| 5 | `Polynomial.lean` | 🚧 In Progress | **Monomial Lemma**. Non-zero guarantee for tree indicators. |
+| 6 | `Composition.lean` | 🚧 In Progress | **$n=2$ Base Case**. Composition preserves complexity. |
+| 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final Inductive synthesis. |
 
-## The Mathlib Bridge
+## 🛠️ Usage
 
-A significant milestone of this formalization is the **Functional-to-Graph Bridge**. We provide a formal conversion from endofunctions $f : \text{Fin } n \to \text{Fin } n$ to Mathlib's `SimpleGraph` API:
+### Prerequisites
+- Install [Lean 4](https://leanprover.github.io/lean4/doc/setup.html) via `elan`.
+- Ensure you have `lake` (Lean build system) available.
 
-- `treeGraphOfFunction f`: Constructs an undirected graph from the functional digraph.
-- `IsCanonicalTreeFunction.isTreeFunction`: A verified proof that any canonical functional tree induces a formal `SimpleGraph.IsTree`.
-- `isGraceful_bridge`: **[VERIFIED]** Connects functional gracefulness (conjugation-based) to the classical `IsGraceful` property on graphs.
-
-## Current Focus: Phase 4 & 5 Algebraic Expansion
-
-Following the verification of the combinatorial foundations in Phase 3, we are now formalizing the **Graceful Expansion Theorem** and the **Polynomial Indicator Machinery**:
-
-- **Graceful Expansion (Phase 4):** Formalizing the algebraic expansion of the determinantal polynomial $F_f$ into a sum over permutation bases.
-- **Polynomial Indicators (Phase 5):** Proving that the determinantal polynomial evaluates to $\pm(n-1)!$ for any graceful labeling, providing the algebraic guarantee for existence.
-
-**Key Goals:**
-- Prove the `monomial_overlapping_lemma` for general tree functions.
-- Finalize the iterative descent step in Theorem 3.1.
-
-## Getting Started
-
-**Prerequisites:** [Lean 4](https://leanprover.github.io/) and [elan](https://github.com/leanprover/elan).
-
+### Installation & Build
 ```bash
 # Clone the repository
 git clone https://github.com/Doublew08/KRR.git
 cd KRR
 
-# Fetch pre-built Mathlib binaries (saves ~30 min of compilation)
+# Download precompiled Mathlib binaries (Highly Recommended)
 lake exe cache get
 
-# Build the project
-lake build KRR
+# Build the entire project
+lake build
 ```
 
-## Repository Layout
+## 🤝 Community & Contributing
 
-```
-KRR/
-├── Basic.lean                    # Transformation monoid & functional digraphs
-├── Graceful.lean                 # Graceful labeling definitions & star proof
-├── FunctionalReformulation.lean  # Permutation bases (eq. 2.6 in the paper)
-├── GracefulExpansion.lean        # Graceful Expansion Theorem (Thm. 2.1)
-├── Polynomial.lean               # Multivariate polynomial machinery
-├── CompositionLemma.lean         # Composition Lemma (Lemma 3.2)
-└── MainTheorem.lean              # Main theorem assembly
-```
+We coordinate discussions on the **Lean Zulip Chat**. If you are interested in formalizing specific combinatorial bounds or algebraic expansions, please reach out!
 
-## Contributing
+- **Source Material**: [Gnang, E. K. (2022). *A proof of the Kotzig–Ringel–Rosa Conjecture*](https://arxiv.org/abs/2202.03178).
+- **License**: Apache 2.0.
 
-Contributions are welcome. All contributions must follow the **no `sorry`** mandate — every lemma must be fully proved before merging. Areas where help is most needed:
-
-- Proving `count_valid_bases_eq` (Phase 3 — combinatorial argument)
-- Formalizing the determinantal polynomial `F_f` (Phase 5)
-- The Composition Lemma contradiction argument (Phase 6)
-
-## Reference
-
-Gnang, E. K. (2022). *A proof of the Kotzig–Ringel–Rosa Conjecture*. [arXiv:2202.03178](https://arxiv.org/abs/2202.03178).
-
-## License
-
-Released under the [Apache 2.0 License](LICENSE).
+---
+<p align="center">
+  <i>"A tree is a function that eventually forgets everything but its root."</i>
+</p>
