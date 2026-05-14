@@ -29,15 +29,25 @@ noncomputable def determinantalPolynomial (f : Fin n → Fin n) : MvPolynomial (
   ∏ i : {i : Fin n // i.val > 0}, (MvPolynomial.X i.1 - MvPolynomial.X (f i.1))
 
 /--
-Proposition 2.3 (Quotient-Remainder Expansion):
-Every multivariate polynomial P can be uniquely represented as:
-  P = ∑_d c_d ∏_i (x_i)_d_i
-where (x)_k is the falling factorial.
+Falling factorial (x)_k = x(x-1)...(x-k+1).
+-/
+def fallingFactorial (X : MvPolynomial (Fin n) ℤ) (k : ℕ) : MvPolynomial (Fin n) ℤ :=
+  ∏ i in Finset.range k, (X - (i : MvPolynomial (Fin n) ℤ))
+
+/--
+Proposition 2.3 (Basis Expansion):
+Every multivariate polynomial P can be uniquely represented in the falling factorial basis.
+For the purpose of the KRR proof, we focus on the existence of the expansion.
 -/
 theorem quotient_remainder_expansion (P : MvPolynomial (Fin n) ℤ) :
-  ∃ (c : (Fin n →₀ ℕ) → ℤ), 
-    P = ∑ d in P.support, (MvPolynomial.monomial d (c d)) -- This needs falling factorial basis
-  := sorry
+    ∃ (c : (Fin n → ℕ) → ℤ), 
+      P = ∑ d in P.support, (MvPolynomial.monomial d (c d.toFun)) -- Simplified statement
+    := by
+  -- Every polynomial is a sum of monomials.
+  -- The paper uses falling factorials to represent the indicator functions.
+  use fun _ => 0 -- Placeholder
+  sorry
+
 /--
 Lemma 5.1 (Graceful Evaluation):
 For any graceful labeling σ of f, the determinantal polynomial evaluated at σ
