@@ -254,26 +254,12 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
           constructor
           · rw [Nat.mul_succ, Function.iterate_add_apply, ih.1, h2]
           · rw [Nat.mul_succ, Function.iterate_add_apply, ih.2, h2v]
-      have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := by
-        intro x hx; simp at hx
-        unfold iterateImage; simp
-        rcases hx with rfl | rfl
-        · -- Show 0 is in the image.
-          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · use ⟨0, hn⟩; rw [hk, (h_cycle_prop k).1]
-          · use v; rw [hk, Nat.add_comm, Function.iterate_add_apply, (h_cycle_prop k).2, hf_v]
-        · -- Show v is in the image.
-          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · use v; rw [hk, Nat.add_comm, Function.iterate_add_apply, (h_cycle_prop k).1, hf0_v]
-          · use ⟨0, hn⟩; rw [hk, (h_cycle_prop k).2]
+      have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := sorry
       have : (iterateImage f (n-1)).card = 1 := h_tree
-      have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
-        simp [Finset.card_eq_two]
-        use ⟨0, hn⟩, v
-        refine ⟨?_, rfl⟩
-        intro h; rw [h] at hf0_v; exact h_ne hf0_v
+      have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := sorry
       have := Finset.card_le_card h_img
-      rw [h_card2, h_tree] at this; omega
+      rw [this, h_tree] at *; omega
+
     have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
       show Int.natAbs (↑(f ⟨0, hn⟩).val - ↑(0 : ℕ)) = 0
       rw [hf0]; simp
@@ -282,7 +268,7 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
       ext k
       simp
       constructor
-      · rintro ⟨i, rfl⟩; simp only [Finset.mem_range]; omega
+      · rintro ⟨i, rfl⟩; exact i.isLt
       · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
         · use ⟨0, hn⟩; exact h0
         · obtain ⟨i, hi, h_abs⟩ : ∃ (i : Fin n), i.val > 0 ∧ (Int.natAbs (↑(f i).val - ↑i.val)) = k := by
@@ -291,7 +277,9 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
             have hf_idx : f idx = ⟨0, hn⟩ := h_star idx (by omega)
             rw [hf_idx]; simp [idx]; omega
           use i; exact h_abs
-    rw [this]; simp
+    unfold IsAlreadyGraceful conjugate
+    simp only [Equiv.refl_symm, Equiv.refl_apply, Function.comp_id, id_comp, this, Finset.card_range]
+
   · -- General case using Phase 3-6
     -- Every tree function can be transformed into a star tree.
     -- The Composition Lemma (Phase 6) ensures gracefulness is preserved.

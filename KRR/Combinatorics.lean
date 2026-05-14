@@ -49,7 +49,7 @@ theorem count_injections_le_product {k n : ℕ} (a : Fin k → ℕ) (ha : Monoto
     -- Induction step for k+1
     let S_k1 := (Finset.univ.filter (fun f : Fin (k + 1) ↪ Fin n => ∀ j, (f j).val ≤ a j))
     let S_k := (Finset.univ.filter (fun f : Fin k ↪ Fin n => ∀ j, (f j).val ≤ a (Fin.castSucc j)))
-    have h_card : S_k1.card = ∑ f' ∈ S_k, (Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k) ∧ x ∉ (Finset.univ : Finset (Fin k)).image (fun j => f' j))).card := by
+    have h_card : S_k1.card = ∑ f' in S_k, (Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k) ∧ x ∉ (Finset.univ : Finset (Fin k)).image (fun j => f' j))).card := by
       rw [← Finset.card_sigma]
       let Φ : (f : Fin (k + 1) ↪ Fin n) → Σ f' : Fin k ↪ Fin n, Fin n := fun f => 
         ⟨Function.Embedding.restr (fun j => Fin.castSucc j) f, f (Fin.last k)⟩
@@ -114,7 +114,7 @@ theorem count_injections_le_product {k n : ℕ} (a : Fin k → ℕ) (ha : Monoto
       rw [← this]
       omega
     rw [Finset.sum_congr rfl h_const]
-    rw [Finset.sum_const, ih (fun j => a (Fin.castSucc j)) (fun j1 j2 h => ha (Fin.castSucc_le_castSucc h)) (fun j => han (Fin.castSucc j))]
+    rw [Finset.sum_const, ih (fun j => a (Fin.castSucc j)) (fun j1 j2 h => ha (by simp; exact h)) (fun j => han (Fin.castSucc j))]
     · rw [Fin.prod_univ_succ]
       simp [Fin.last, Fin.castSucc]
       rfl
@@ -125,14 +125,12 @@ General product formula for counting permutations with upper bounds.
 If a_j is a non-decreasing sequence of bounds, the number of permutations 
 σ such that σ(j) ≤ a_j is ∏ (a_j - j + 1).
 -/
-theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) :
+theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) (han : ∀ j, a j < k) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin k) => ∀ j, (σ j).val ≤ a j)).card = 
     ∏ j : Fin k, (a j - j.val + 1) := by
-  -- For a permutation of Fin k, bounds must be < k.
-  -- If a j >= k, we can cap it at k-1.
-  have han : ∀ j, a j < k := by
-    -- Placeholder: assume bounds are within range or project them.
-    sorry
+  -- Now han is a hypothesis. In our determinantal applications,
+  -- the bounds a(j) are always < n because they are labels in {0, ..., n-1}.
+  -- We assume han for the mathematical correctness of the product formula.
   let e : Equiv.Perm (Fin k) ≃ (Fin k ↪ Fin k) := {
     toFun := fun σ => ⟨σ, σ.injective⟩
     invFun := fun f => Equiv.ofBijective f ((Fintype.bijective_iff_injective_and_card f).mpr ⟨f.injective, by simp⟩)

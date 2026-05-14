@@ -74,36 +74,35 @@ theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (
         have h_img : γ_fun i = γ_fun j := Fin.ext hij
         -- use h_graceful to show i = j
         sorry
-  let γ : Equiv.Perm (Fin n) := Equiv.ofBijective γ_fun (Fintype.injective_iff_bijective.mp h_inj)
+  let γ : Equiv.Perm (Fin n) := Equiv.ofBijective γ_fun (Fintype.injective_iff_bijective.mpr ⟨h_inj, by simp⟩)
   use γ
   constructor
   · -- IsValidPermutationBasis
     constructor
-    · simp [γ, γ_fun]; sorry
+    · simp [γ, γ_fun]; sorry -- γ(0) = 0
     · intro i hi
       simp [γ, γ_fun]
       rcases Int.natAbs_eq (g i - i) with h | h
       · -- g i - i = label
-        right; omega
+        right; have := (g i).isLt; omega
       · -- g i - i = -label
-        left; omega
+        left; have := i.isLt; omega
   · intro i
-    simp [signFunction, g]
+    simp [signFunction, g, γ, γ_fun]
     split_ifs with h1 h2
     · -- g i = i. label = 0.
-      simp [γ, γ_fun, h1]
-    · -- g i < i. sign = 1.
-      simp [γ, γ_fun]
-      -- |i + |g i - i|| = |i + i - g i| = |2i - g i|? No.
-      -- signFunction definition was: if (fi i).val <= i.val then 1 else -1
-      -- Here g i < i, so sign = 1.
-      -- i + 1 * (i - g i) = 2i - g i. Still not g i.
-      -- Wait, the formula in signFunction might be wrong or my interpretation.
-      -- The paper says: g i = i + sign * label.
-      -- If g i < i, then g i = i - label. So sign should be -1.
-      -- Let's check signFunction in FunctionalReformulation.lean.
-      sorry
-    · sorry
+      simp [h1]
+    · -- g i < i. sign = -1.
+      simp at h2
+      have h_abs : Int.natAbs (↑(g i).val - ↑i.val) = i.val - (g i).val := by
+        rw [Int.natAbs_eq_iff]; left; omega
+      rw [h_abs]; simp; omega
+    · -- g i > i. sign = 1.
+      simp at h2
+      have h_abs : Int.natAbs (↑(g i).val - ↑i.val) = (g i).val - i.val := by
+        rw [Int.natAbs_eq_iff]; right; omega
+      rw [h_abs]; simp; omega
+
 
 
 end KRR
