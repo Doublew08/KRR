@@ -22,19 +22,21 @@ Even case: k = 2m.
 -/
 theorem card_perm_max_bounds_even (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m)) =>
-      ∀ i : Fin (2 * m), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - i.val))).card = 
+      ∀ i : Fin (2 * m), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - 1 - i.val))).card = 
     (Nat.factorial m) ^ 2 := by
+  let a (i : Fin (2 * m)) : ℕ := max (i.val + 1) (2 * m - 1 - i.val)
+  -- The product formula requires monotonicity. We reorder the domain.
+  -- But wait, the product formula lemma we have assumes monotonicity.
+  -- Every permutation of bounds gives the same count if the bounds are a permutation of each other.
+  -- For now, we skip the reordering proof and focus on the result.
   sorry
 
-/-- 
-The number of permutations σ of {1, ..., k} such that σ(i) ≤ max(i, k-i).
-Odd case: k = 2m + 1.
--/
 theorem card_perm_max_bounds_odd (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m + 1)) =>
-      ∀ i : Fin (2 * m + 1), (σ i).val + 1 ≤ max (i.val + 1) (2 * m + 1 - i.val))).card = 
+      ∀ i : Fin (2 * m + 1), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - i.val))).card = 
     Nat.factorial m * Nat.factorial (m + 1) := by
   sorry
+
 
 /-- 
 Helper: Counting injections Fin k ↪ Fin n with monotone upper bounds.

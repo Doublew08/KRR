@@ -22,17 +22,13 @@ count is non-increasing. Since it ends at a graceful star, it must start gracefu
 -/
 theorem main_theorem (hn : 0 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
     IsGracefulFunction f :=
--- The proof uses induction on the diameter/iterations and calls composition_lemma.
-sorry
+  sorry
 
-/-- 
-Final Corollary: The Kotzig–Ringel–Rosa Conjecture.
-Every tree admits a graceful labeling.
--/
 theorem KRR_Conjecture_final : ∀ (V : Type*) [Fintype V] [DecidableEq V] [Nonempty V]
     (G : SimpleGraph V) [DecidableRel G.Adj],
     G.IsTree → IsGraceful' G :=
--- This bridges the functional main_theorem to the SimpleGraph statement.
-sorry
+  sorry
+
+
 
 end KRR
