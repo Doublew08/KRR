@@ -20,17 +20,18 @@ variable {n : ℕ}
 
 /--
 Theorem 2.1 (Graceful Expansion):
-Every graceful labeling of a functional digraph admits a unique expansion 
-in terms of a permutation basis γ and a sign function 𝔰_f.
+Every graceful labeling σ of a functional tree f admits an expansion:
+  σ(f(i)) = σ(i) + s_f(σ(i)) * γ(σ(i))
+where γ is a valid permutation basis and s_f is the sign function.
 -/
-theorem graceful_expansion (hn : 0 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
+theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
+    (h_tree : IsTreeFunction f)
     (h_graceful : IsAlreadyGraceful (conjugate f σ)) :
-    ∃ (γ : Equiv.Perm (Fin n)) (t : Fin 2), 
-      IsValidPermutationBasis hn γ ∧ 
+    ∃ (γ : Equiv.Perm (Fin n)), 
+      IsValidPermutationBasis (by omega) γ ∧ 
       ∀ i : Fin n, 
-        f i = σ.symm (if t = 0 then 
-          ⟨(Int.natAbs (↑(σ i).val + (signFunction f σ γ (σ i)) * ↑(γ (σ i)).val)) % n, by sorry⟩ 
-          else sorry) :=
-sorry -- This is Phase 4. 
+        (conjugate f σ) i = 
+          ⟨(Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)), by sorry⟩ :=
+sorry
 
 end KRR

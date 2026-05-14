@@ -95,38 +95,74 @@ theorem count_valid_bases_eq (hn : 0 < n) (h2 : 2 < n) :
         let σ := Equiv.Perm.congr e_opt γ
         have hσ0 : σ none = none := by 
           simp [σ, e_opt, finSuccEquiv, hγ.2.1]
-        have h_e_opt : e_opt i = some j := by 
-          simp [i, e_opt, finSuccEquiv]
-        have : σ (some j) = some (Equiv.removeNone σ j) := by
-          rw [Equiv.removeNone_some σ j hσ0]
-        rw [← this, σ, Equiv.Perm.congr_apply, h_e_opt]
-        -- succAbove logic: e_opt v = some v' iff v = v' + 1
         let v := γ i
         have hv0 : v ≠ 0 := by
           intro hv; have := γ.injective (hv.symm ▸ hγ.2.1.symm : γ 0 = γ i)
           exact hi_pos.ne this.symm
-        obtain ⟨v', hv'⟩ := e_opt.surjective (e_opt v)
-        have : e_opt v = some (Equiv.removeNone σ j) := by
-          rw [← Equiv.Perm.congr_apply e_opt γ (some j), h_e_opt] at this
-          exact this.symm
-        rw [this] at hv'
-        -- Now relate v.val to v'.val + 1
-        sorry
+        have h_σj : σ (some j) = some ⟨v.val - 1, by 
+          have := v.isLt; omega⟩ := by
+          simp [σ, e_opt, finSuccEquiv, hv0, i]
+        have h_rem : σ (some j) = some (Equiv.removeNone σ j) := by
+          rw [Equiv.removeNone_some σ j hσ0]
+        rw [h_rem] at h_σj; simp at h_σj
+        rw [h_σj]; omega
       rw [h_phi]
-      apply hcond
-    · sorry -- Injective
-    · sorry -- Surjective
+      apply hγ.2.2 i hi_pos
+    · intro γ1 γ2 hγ1 hγ2 heq
+      simp only [Φ] at heq
+      let σ1 := Equiv.Perm.congr e_opt γ1
+      let σ2 := Equiv.Perm.congr e_opt γ2
+      have hσ1 : σ1 none = none := by simp [σ1, e_opt, finSuccEquiv, (Finset.mem_filter.1 hγ1).2.1]
+      have hσ2 : σ2 none = none := by simp [σ2, e_opt, finSuccEquiv, (Finset.mem_filter.1 hγ2).2.1]
+      have : σ1 = σ2 := by
+        apply Equiv.Perm.decomposeOption.injective
+        simp [Equiv.Perm.decomposeOption, hσ1, hσ2, heq]
+      exact (Equiv.Perm.congr e_opt).injective this
+    · intro φ hφ
+      simp only [T, Finset.mem_filter, Finset.mem_univ, true_and] at hφ
+      let σ : Equiv.Perm (Option (Fin k)) := Equiv.Perm.decomposeOption.symm (none, φ)
+      let γ := (Equiv.Perm.congr e_opt).symm σ
+      use γ
+      have hγ0 : γ ⟨0, hn⟩ = ⟨0, hn⟩ := by
+        simp [γ, σ, e_opt, finSuccEquiv]
+      simp only [S, Finset.mem_filter, Finset.mem_univ, true_and]
+      refine ⟨hγ0, ?_⟩
+      · intro i hi
+        let j := (e_opt i).get (by simp [e_opt, finSuccEquiv, hi.ne'])
+        have hi_j : some j = e_opt i := by simp [j]
+        have : (γ i).val = (φ j).val + 1 := by
+          simp [γ, σ, ← hi_j, e_opt, finSuccEquiv]
+          have hσj : σ (e_opt i) = some (φ j) := by
+            simp [σ, hi_j]
+          have : (e_opt (γ i)).val = (φ j).val := by
+            simp [γ, hσj]
+          have h_γi : γ i ≠ 0 := by
+            intro h; simp [h, e_opt, finSuccEquiv] at hσj
+          have : (e_opt (γ i)).val = (γ i).val - 1 := by
+            simp [e_opt, finSuccEquiv, h_γi]
+          omega
+        rw [this]
+        have hφj := hφ j
+        convert hφj using 1
+        · simp [j, e_opt, finSuccEquiv]; omega
+        · simp [j, e_opt, finSuccEquiv]; omega
   
   -- 2. Use the product of bounds formula for permutations with restricted ranges.
   rw [h_iso]
   obtain ⟨m, hm⟩ := Nat.even_or_odd k
   · rcases hm with rfl
-    rw [Nat.mul_div_right _ (by omega), Nat.mul_add_div_right _ _ (by omega)]
+    have h1 : (2 * m) / 2 = m := Nat.mul_div_right _ (by omega)
+    have h2 : (2 * m + 1) / 2 = m := by rw [Nat.add_comm, Nat.add_div_right _ (by omega)]; simp
+    rw [h1, h2]
     convert card_perm_max_bounds_even m
     · simp; omega
     · simp; rfl
   · rcases hm with rfl
-    rw [Nat.add_div_right _ (by omega), Nat.add_assoc, Nat.add_add_div_right _ _ (by omega)]
+    have h1 : (2 * m + 1) / 2 = m := by rw [Nat.add_comm, Nat.add_div_right _ (by omega)]; simp
+    have h2 : (2 * m + 1 + 1) / 2 = m + 1 := by 
+      have : 2 * m + 1 + 1 = 2 * (m + 1) := by omega
+      rw [this, Nat.mul_div_right _ (by omega)]
+    rw [h1, h2]
     convert card_perm_max_bounds_odd m
     · simp; omega
     · simp; rfl
