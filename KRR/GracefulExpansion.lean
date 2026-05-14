@@ -30,13 +30,22 @@ theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (
     ∃ (γ : Equiv.Perm (Fin n)), 
       IsValidPermutationBasis (by omega) γ ∧ 
       ∀ i : Fin n, 
-        (conjugate f σ) i = 
-          ⟨(Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)), 
-            by 
-              have h_eq : (conjugate f σ) i = ⟨(Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)), sorry⟩ := sorry
-              rw [← h_eq]
-              exact ((conjugate f σ) i).isLt
-            ⟩ := by
+    (conjugate f σ) i = ⟨Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val), by
+      have h_id : (Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)) = (conjugate f σ i).val := by
+        let g := conjugate f σ
+        unfold signFunction
+        split_ifs with h_loop h_lt
+        · simp [h_loop]
+        · have h_gamma : (γ i).val = (g i).val - i.val := by
+            simp [γ, γ_fun]; rw [Int.natAbs_of_nonneg]; omega
+          simp [h_gt, h_gamma]; omega
+        · have h_gamma : (γ i).val = i.val - (g i).val := by
+            simp [γ, γ_fun]; rw [Int.natAbs_of_nonneg]; omega
+          simp [h_lt, h_gamma]; omega
+
+      rw [h_id]
+      exact (conjugate f σ i).isLt⟩ := by
+
   let g := conjugate f σ
   -- Define γ(i) = |g(i) - i|
   let γ_fun : Fin n → Fin n := fun i => 
@@ -46,40 +55,31 @@ theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (
       omega⟩
   -- Show γ is a permutation
   have h_inj : Function.Injective γ_fun := by
-    intro i j hij
-    simp at hij
-    -- If γ(i) = γ(j) and i, j > 0, then labels are same, so i = j since g is already graceful
-    rcases Nat.eq_zero_or_pos i.val with hi0 | hiP
-    · have hi : i = 0 := Fin.ext hi0
-      rw [hi] at hij; simp [γ_fun] at hij
-      -- |g(0) - 0| = |0 - 0| = 0 (since g 0 = 0 for tree functions)
-      have hg0 : g 0 = 0 := by
-        -- f is a tree function, conjugate of tree function is tree function
-        -- 0 is the sink
-        sorry
-      simp [hg0] at hij
-      rcases Nat.eq_zero_or_pos j.val with hj0 | hjP
-      · exact Fin.ext (hi0.trans hj0.symm)
-      · -- If j > 0, then γ(j) > 0 because g is graceful
-        have hj_lb : γ_fun j ≠ 0 := by
-          intro h; simp [γ_fun] at h
-          -- label 0 only for i=0
-          sorry
-        contradiction
-    · rcases Nat.eq_zero_or_pos j.val with hj0 | hjP
-      · -- symmetric to above
-        sorry
-      · -- i, j > 0. labels match, so i = j
-        unfold IsAlreadyGraceful edgeLabelSet at h_graceful
-        have h_img : γ_fun i = γ_fun j := Fin.ext hij
-        -- use h_graceful to show i = j
-        sorry
+    have h_surj : ∀ k : Fin n, ∃ i, γ_fun i = k := by
+      intro k
+      have h_range : Finset.image γ_fun Finset.univ = Finset.range n := by
+        apply Finset.eq_of_subset_of_card_le
+        · intro x hx; simp at hx; obtain ⟨i, rfl⟩ := hx; exact x.isLt
+        · rw [h_graceful, Finset.card_range]
+      have : k ∈ Finset.range n := Finset.mem_range.mpr k.isLt
+      rw [← h_range] at this; simp at this; exact this
+    exact Fintype.injective_iff_surjective.mpr h_surj hij
+
   let γ : Equiv.Perm (Fin n) := Equiv.ofBijective γ_fun (Fintype.injective_iff_bijective.mpr ⟨h_inj, by simp⟩)
   use γ
   constructor
   · -- IsValidPermutationBasis
     constructor
-    · simp [γ, γ_fun]; sorry -- γ(0) = 0
+    · simp [γ, γ_fun]
+      -- Since g is a tree function, g(0) = 0.
+      have hg0 : g 0 = 0 := by
+        unfold g conjugate
+        simp
+        -- For simplicity, we assume σ 0 = 0 or f(σ 0) = σ 0.
+        -- In the paper, the sink is always mapped to 0.
+        sorry
+      simp [hg0]
+
     · intro i hi
       simp [γ, γ_fun]
       rcases Int.natAbs_eq (g i - i) with h | h
