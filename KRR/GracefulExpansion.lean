@@ -31,7 +31,11 @@ theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (
       IsValidPermutationBasis (by omega) γ ∧ 
       ∀ i : Fin n, 
         (conjugate f σ) i = 
-          ⟨(Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)), by sorry⟩ :=
+          ⟨(Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)), 
+            by 
+              -- The value is equal to (conjugate f σ i).val which is < n
+              sorry -- Still needs the equality to be proven to use its bound
+            ⟩ :=
 sorry
 
 end KRR

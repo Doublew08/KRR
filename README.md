@@ -13,7 +13,7 @@
   <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
-  <img src="https://img.shields.io/badge/sorry%20count-11%20remaining-orange" alt="Sorry Count">
+  <img src="https://img.shields.io/badge/sorry%20count-10%20remaining-orange" alt="Sorry Count">
 </p>
 
 ---
@@ -62,7 +62,7 @@ theorem isGraceful_bridge (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
 | 2 | `Graceful.lean` | ✅ Verified | **Star Case Anchor**. Proved star trees are graceful. |
 | 3 | `Combinatorics.lean` | ✅ Verified | **Isomorphism Bridge**. Verified permutation count $n! \cdot (n-1)!$. |
 | 4 | `Expansion.lean` | 🔲 Scaffolded | Expansion formula for the determinantal polynomial. |
-| 5 | `Polynomial.lean` | 🚧 In Progress | **Monomial Lemma**. Non-zero guarantee for tree indicators. |
+| 5 | `Polynomial.lean` | ✅ Verified | **Monomial Lemma**. Non-zero guarantee for tree indicators. |
 | 6 | `Composition.lean` | 🚧 In Progress | **$n=2$ Base Case**. Composition preserves complexity. |
 | 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final Inductive synthesis. |
 
