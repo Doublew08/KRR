@@ -26,7 +26,7 @@ The determinantal polynomial F_f associated with a functional digraph G_f.
 F_f(x₀, ..., xₙ₋₁) = ∏_{i=1}^{n-1} (x_i - x_{f(i)})
 -/
 noncomputable def determinantalPolynomial (f : Fin n → Fin n) : MvPolynomial (Fin n) ℤ :=
-  ∏ i : {i : Fin n // i.val > 0}, (MvPolynomial.X i.val - MvPolynomial.X (f i.val))
+  ∏ i : {i : Fin n // i.val > 0}, (MvPolynomial.X i.1 - MvPolynomial.X (f i.1))
 
 /--
 Proposition 2.3 (Quotient-Remainder Expansion):
@@ -63,8 +63,15 @@ theorem graceful_evaluation (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm 
       -- Label must be at least 1 because σ i ≠ σ (f i)
       have : σ i ≠ σ (f i) := by
         intro heq; have := σ.injective heq
-        have hLT := (IsTreeFunction.isTreeFunction hn f (by sorry)).2 i hi
-        omega
+        -- Since f is a tree function and i > 0, i cannot be a fixed point.
+        have h_ne : i ≠ f i := by
+          by_contra h_eq
+          have : i ∈ iterateImage f (n-1) := by
+            unfold iterateImage; simp; use i; exact Function.IsFixedPt.iterate h_eq (n - 1)
+          have : (iterateImage f (n-1)).card = 1 := h_tree
+          -- Since 0 is a fixed point (from tree property), i must be 0.
+          sorry
+        exact h_ne this
       omega
     exact Finset.eq_of_subset_of_card_le hS_sub (by simp; omega)
   have : (∏ i : {i // 0 < i.val}, Int.natAbs ((σ i.val).val - (σ (f i.val)).val)) = 
@@ -81,10 +88,26 @@ The determinantal polynomial F_f is non-zero for any tree function f.
 Specifically, there exists a monomial with coefficient ±1.
 -/
 theorem monomial_overlapping_lemma (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
-  (determinantalPolynomial f) ≠ 0 := by
+    (determinantalPolynomial f) ≠ 0 := by
   unfold determinantalPolynomial
-  -- A product of non-zero polynomials in an integral domain is non-zero.
-  -- Each (x_i - x_j) is non-zero because i ≠ j for a loopless tree.
-  sorry
+  apply Finset.prod_ne_zero
+  intro i hi
+  simp only [Finset.mem_univ, Subtype.forall, true_and] at hi
+  have h_ne : i ≠ f i := by
+    by_contra heq
+    obtain ⟨sink, h_sink⟩ := Finset.card_eq_one.mp h_tree
+    have h_fix_val : f i = i := heq
+    have : i ∈ iterateImage f (n-1) := by
+      unfold iterateImage; simp; use i; exact Function.IsFixedPt.iterate h_fix_val (n - 1)
+    have : i = sink := by
+      rw [← Finset.mem_singleton, ← h_sink]; exact this
+    -- We assume the root 0 is the fixed point for tree functions.
+    -- More generally, if i > 0, then i ≠ sink if sink = 0.
+    sorry
+  apply sub_ne_zero.mpr
+  intro h_poly
+  have : (MvPolynomial.X i : MvPolynomial (Fin n) ℤ) = MvPolynomial.X (f i) := h_poly
+  have := MvPolynomial.X_injective this
+  exact h_ne this
 
 end KRR

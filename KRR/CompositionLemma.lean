@@ -39,8 +39,11 @@ theorem composition_lemma (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFun
           intro h; have := h_tree.2.1 1 (by omega)
           simp [h] at this; omega
         fin_cases (f 1); rfl
-    rw [this]
-    simp [conjugate, edgeLabelSet]
-  · sorry
+    have hf2 : f ∘ f = fun i => 0 := by
+      ext i; rw [this, Function.comp_apply, this]; rfl
+    rw [hf2]
+    simp [conjugate, edgeLabelSet, IsAlreadyGraceful, IsGracefulFunction]
+    -- Both are 1 because there is only one edge (0, 1) and its label is 1.
+    rfl
 
 end KRR
