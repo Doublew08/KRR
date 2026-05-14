@@ -25,11 +25,16 @@ theorem card_perm_max_bounds_even (m : ℕ) :
       ∀ i : Fin (2 * m), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - 1 - i.val))).card = 
     (Nat.factorial m) ^ 2 := by
   let a (i : Fin (2 * m)) : ℕ := max (i.val + 1) (2 * m - 1 - i.val)
-  -- The product formula requires monotonicity. We reorder the domain.
-  -- But wait, the product formula lemma we have assumes monotonicity.
-  -- Every permutation of bounds gives the same count if the bounds are a permutation of each other.
-  -- For now, we skip the reordering proof and focus on the result.
+  -- The product formula count is invariant under permutation of bounds.
+  -- The sorted bounds are s_j = [m, m+1, m+1, ..., 2m-1, 2m-1, 2m] (using 1-based labels)
+  -- For count_perm_le_product, we use 0-based labels.
+  -- s'_j = [m-1, m, m, ..., 2m-2, 2m-2, 2m-1]
+  let s (j : Fin (2 * m)) : ℕ := if j.val % 2 = 0 then m + j.val / 2 else m + j.val / 2
   sorry
+
+
+
+
 
 theorem card_perm_max_bounds_odd (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m + 1)) =>
@@ -150,22 +155,31 @@ theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) (h
 def permFixEquiv {α : Type*} [Fintype α] [DecidableEq α] (a : α) :
     {σ : Equiv.Perm α // σ a = a} ≃ Equiv.Perm {x // x ≠ a} where
   toFun σ := Equiv.Perm.subtypePerm σ.1 (fun x => by
-    rw [Equiv.Perm.apply_eq_iff_eq]; intro h; exact σ.2.symm ▸ h)
-  invFun σ := ⟨Equiv.Perm.extendDomain σ (Equiv.refl {x // x = a}), by
-    simp⟩
+    rw [← Equiv.Perm.apply_eq_iff_eq (f := σ.1)]; intro h; exact σ.2 ▸ h)
+  invFun σ' := ⟨{
+    toFun := fun x => if h : x = a then a else σ' ⟨x, h⟩
+    invFun := fun x => if h : x = a then a else (σ'.symm ⟨x, h⟩).val
+    left_inv := fun x => by 
+      split_ifs with h
+      · exact h
+      · simp
+    right_inv := fun x => by
+      split_ifs with h
+      · exact h
+      · simp
+  }, by simp⟩
   left_inv σ := by
     ext x
     simp
     split_ifs with h
-    · rcases h with ⟨y, hy, rfl⟩; rfl
-    · rcases σ with ⟨σ, hσ⟩
-      have : x = a := by
-        by_contra hne
-        exact h ⟨⟨x, hne⟩, rfl⟩
-      rw [this]; simp; exact hσ
-  right_inv σ := by
+    · exact h.symm.trans σ.2
+    · rfl
+  right_inv σ' := by
     ext ⟨x, hx⟩
-    simp
+    simp [hx]
+
+
+
 
 
 
