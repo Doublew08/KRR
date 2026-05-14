@@ -15,7 +15,7 @@
   <a href="https://github.com/Doublew08/KRR/actions"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
-  <img src="https://img.shields.io/badge/sorry%20count-9%20remaining-orange" alt="Sorry Count">
+  <img src="https://img.shields.io/badge/sorry%20count-8%20remaining-orange" alt="Sorry Count">
 </p>
 
 ---
@@ -45,11 +45,11 @@ graph TD
 | Phase | Module | Status | Notes |
 | :---: | :--- | :---: | :--- |
 | 1 | `Basic.lean` | ✅ Verified | **100% sorry-free**. Transformation monoid, functional digraphs, induction proofs for fixed points. |
-| 2 | `Graceful.lean` | ✅ Verified | **SimpleGraph bridge theorem** and star proofs verified; functional-to-graph conversion complete. |
-| 3 | `FunctionalReformulation.lean` | 🚧 In Progress | Isomorphism $\text{Perm}(n)_0 \cong \text{Perm}(n-1)$ verified; counting theorem proof structured. |
+| 2 | `Graceful.lean` | ✅ Verified | **SimpleGraph bridge theorem** and star tree base case verified; functional-to-graph conversion complete. |
+| 3 | `FunctionalReformulation.lean` | ✅ Verified | Isomorphism $\text{Perm}(n)_0 \cong \text{Perm}(n-1)$ and counting theorem `count_valid_bases_eq` fully verified. |
 | 4 | `GracefulExpansion.lean` | 🔲 Scaffolded | Theorem 2.1 statement; expansion formula needs proof. |
-| 5 | `Polynomial.lean` | 🔲 Scaffolded | `MvPolynomial` framework; `determinantalPolynomial` pending. |
-| 6 | `CompositionLemma.lean` | 🔲 Scaffolded | Lemma 3.2 statement; core contradiction argument pending. |
+| 5 | `Polynomial.lean` | 🚧 In Progress | `MvPolynomial` framework; `graceful_evaluation` indicator verified. |
+| 6 | `CompositionLemma.lean` | 🚧 In Progress | Lemma 3.2 statement; $n=2$ base case verified. |
 | 7 | `MainTheorem.lean` | 🔲 Scaffolded | Final assembly of phases into the Graceful Tree Conjecture. |
 
 ## The Mathlib Bridge
@@ -60,17 +60,16 @@ A significant milestone of this formalization is the **Functional-to-Graph Bridg
 - `IsCanonicalTreeFunction.isTreeFunction`: A verified proof that any canonical functional tree induces a formal `SimpleGraph.IsTree`.
 - `isGraceful_bridge`: **[VERIFIED]** Connects functional gracefulness (conjugation-based) to the classical `IsGraceful` property on graphs.
 
-## Current Focus: Phase 3 Combinatorics
+## Current Focus: Phase 4 & 5 Algebraic Expansion
 
-We are currently formalizing the combinatorial counting of **Valid Permutation Bases**. The theorem `count_valid_bases_eq` establishes that for a tree with $n$ vertices, the number of permutations $\gamma$ satisfying the boundary condition:
-$$\forall i \in \{1, \dots, n-1\}, \gamma(i) \le \max(i, (n-1)-i)$$
-is exactly $\lfloor (n-1)/2 \rfloor! \cdot \lceil (n-1)/2 \rceil!$. 
+Following the verification of the combinatorial foundations in Phase 3, we are now formalizing the **Graceful Expansion Theorem** and the **Polynomial Indicator Machinery**:
 
-**Key Identities Verified:**
-- For $n-1 = 2m$, the count is $(m!)^2$.
-- For $n-1 = 2m+1$, the count is $m! \cdot (m+1)!$.
+- **Graceful Expansion (Phase 4):** Formalizing the algebraic expansion of the determinantal polynomial $F_f$ into a sum over permutation bases.
+- **Polynomial Indicators (Phase 5):** Proving that the determinantal polynomial evaluates to $\pm(n-1)!$ for any graceful labeling, providing the algebraic guarantee for existence.
 
-This result is foundational for the determinantal polynomial expansion in Phase 5.
+**Key Goals:**
+- Prove the `monomial_overlapping_lemma` for general tree functions.
+- Finalize the iterative descent step in Theorem 3.1.
 
 ## Getting Started
 
