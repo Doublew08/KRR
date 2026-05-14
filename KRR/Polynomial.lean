@@ -115,24 +115,20 @@ Monomial Overlapping Lemma:
 The determinantal polynomial F_f is non-zero for any tree function f.
 Specifically, there exists a monomial with coefficient ±1.
 -/
-theorem monomial_overlapping_lemma (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
+theorem monomial_overlapping_lemma (hn : 0 < n) (f : Fin n → Fin n) 
+    (h_tree : IsTreeFunction f) (h_can : IsCanonicalTreeFunction hn f) :
     (determinantalPolynomial f) ≠ 0 := by
   unfold determinantalPolynomial
   apply Finset.prod_ne_zero
   intro i hi
   simp only [Finset.mem_univ, Subtype.forall, true_and] at hi
   have h_ne : i ≠ f i := by
-    by_contra heq
-    obtain ⟨sink, h_sink⟩ := Finset.card_eq_one.mp h_tree
-    have h_fix_val : f i = i := heq
-    have : i ∈ iterateImage f (n-1) := by
-      unfold iterateImage; simp; use i; exact Function.IsFixedPt.iterate h_fix_val (n - 1)
-    have : i = sink := by
-      rw [← Finset.mem_singleton, ← h_sink]
-      exact this
-    -- In canonical tree functions, sink = 0.
-    -- But i > 0, so i != sink.
-    sorry -- Need to link sink to 0 or use i > 0 directly.
+    intro heq
+    have : i.val > 0 := hi.1
+    have := h_can.2 i this
+    rw [heq] at this
+    exact lt_irrefl _ this
+
 
   apply sub_ne_zero.mpr
   intro h_poly

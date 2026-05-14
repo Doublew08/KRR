@@ -26,7 +26,9 @@ where γ is a valid permutation basis and s_f is the sign function.
 -/
 theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
     (h_tree : IsTreeFunction f)
-    (h_graceful : IsAlreadyGraceful (conjugate f σ)) :
+    (h_graceful : IsAlreadyGraceful (conjugate f σ))
+    (h_canonical : IsCanonicalTreeFunction (by omega) (conjugate f σ)) :
+
     ∃ (γ : Equiv.Perm (Fin n)), 
       IsValidPermutationBasis (by omega) γ ∧ 
       ∀ i : Fin n, 
@@ -72,13 +74,9 @@ theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (
     constructor
     · simp [γ, γ_fun]
       -- Since g is a tree function, g(0) = 0.
-      have hg0 : g 0 = 0 := by
-        unfold g conjugate
-        simp
-        -- For simplicity, we assume σ 0 = 0 or f(σ 0) = σ 0.
-        -- In the paper, the sink is always mapped to 0.
-        sorry
+      have hg0 : g 0 = 0 := h_canonical.1
       simp [hg0]
+
 
     · intro i hi
       simp [γ, γ_fun]

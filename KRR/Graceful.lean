@@ -208,9 +208,13 @@ For any tree function f with diameter ≥ 3, if f² is graceful, then f is grace
 -/
 theorem theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
     (h_diam : funcDiameter f ≥ 3) :
-    IsGracefulFunction (f ∘ f) → IsGracefulFunction f := by
-  -- Uses Phase 4 (Expansion) and Phase 6 (Composition Lemma)
-  sorry
+  intro h_graceful_f2
+  unfold IsGracefulFunction at h_graceful_f2 ⊢
+  -- By Composition Lemma, the max label count is the same for f and f^2
+  have h_max := composition_lemma hn f h_tree
+  rw [h_max] at h_graceful_f2
+  exact h_graceful_f2
+
 
 /--
 This will be proved by the chain:
@@ -298,10 +302,11 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
 
 
 
-  · -- General case using Phase 3-6
-    -- Every tree function can be transformed into a star tree.
-    -- The Composition Lemma (Phase 6) ensures gracefulness is preserved.
-    -- The Polynomial Indicator (Phase 5) ensures existence.
-    sorry
+    -- By induction on the number of compositions f^[2^k]
+    -- Eventually f^[2^k] is a star tree (identically constant)
+    -- We've proved star trees are graceful in the base case above.
+    -- Composition Lemma (Theorem 3.1) then implies f is graceful.
+    sorry -- Need induction on k such that f^[2^k] is a star.
+
 
 end KRR
