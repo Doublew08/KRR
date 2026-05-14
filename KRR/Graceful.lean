@@ -292,7 +292,9 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
             rw [hf_idx]; simp [idx]; omega
           use i; exact h_abs
     rw [this]
-    simp only [Equiv.refl_symm, Equiv.refl_apply, Function.comp_id, id_comp, Finset.card_range]
+    rw [this]
+    simp only [id_comp, Finset.card_range]
+
 
 
 
