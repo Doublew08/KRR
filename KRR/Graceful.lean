@@ -202,15 +202,94 @@ theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
     · rw [Sym2.lift_mk, ← Int.natAbs_neg (↑i.val - ↑(f i).val), neg_sub]
       exact hi_k
 
-/-- **The KRR Conjecture** (Graceful Tree Conjecture).
-Every tree admits a graceful labeling.
+/--
+Theorem 3.1 (Iterative Descent):
+For any tree function f with diameter ≥ 3, if f² is graceful, then f is graceful.
+-/
+theorem theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
+    (h_diam : funcDiameter f ≥ 3) :
+    IsGracefulFunction (f ∘ f) → IsGracefulFunction f := by
+  -- Uses Phase 4 (Expansion) and Phase 6 (Composition Lemma)
+  sorry
 
+/--
 This will be proved by the chain:
   Phase 3 (Functional Reformulation) → Phase 4 (Graceful Expansion) →
   Phase 5 (Polynomial Machinery) → Phase 6 (Composition Lemma) →
   Phase 7 (Main Theorem via iterated composition to constant function). -/
 theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
-    IsTreeFunction f → IsGracefulFunction f :=
-  sorry -- Phase 7: assembled from all previous phases.
+    IsTreeFunction f → IsGracefulFunction f := by
+  intro h_tree
+  -- Case: star tree
+  by_cases h_star : ∀ i, i.val > 0 → f i = (⟨0, hn⟩ : Fin n)
+  · use Equiv.refl (Fin n)
+    simp [IsAlreadyGraceful, edgeLabelSet, conjugate]
+    have hf0 : f ⟨0, hn⟩ = ⟨0, hn⟩ := by
+      -- Since all i > 0 map to 0, if f 0 ≠ 0 then we have a cycle (0, f 0).
+      -- In a tree function, iterateImage f (n-1) must be {fixed_point}.
+      by_contra h_ne
+      let v := f ⟨0, hn⟩
+      have hf0_v : f ⟨0, hn⟩ = v := rfl
+      have hv : v.val > 0 := by
+        rcases Nat.eq_zero_or_pos v.val with hz | hp
+        · exfalso; exact h_ne (Fin.ext hz)
+        · exact hp
+      have hf_v : f v = ⟨0, hn⟩ := h_star v hv
+      have h_cycle : ∀ k, f^[k] ⟨0, hn⟩ ∈ ({⟨0, hn⟩, v} : Finset (Fin n)) := by
+        intro k; induction k with
+        | zero => simp
+        | succ k ih => 
+          rw [Function.iterate_succ_apply']
+          simp at ih ⊢; rcases ih with h0 | hv
+          · right; rw [h0]; rfl
+          · left; rw [hv]; exact hf_v
+      have h2 : f^[2] ⟨0, hn⟩ = ⟨0, hn⟩ := by
+        rw [Function.iterate_two, hf0_v, hf_v]
+      have h2v : f^[2] v = v := by
+        rw [Function.iterate_two, hf_v, hf0_v]
+      have h_cycle_prop : ∀ k, f^[2 * k] ⟨0, hn⟩ = ⟨0, hn⟩ ∧ f^[2 * k + 1] ⟨0, hn⟩ = v := by
+        intro k; induction k with
+        | zero => simp [hf0_v]
+        | succ k ih =>
+          constructor
+          · rw [Nat.mul_succ, Function.iterate_add_apply, ih.1, h2]
+          · rw [Nat.mul_succ, Function.iterate_add_apply, ih.2, h2v]
+      have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := by
+        intro x hx; simp at hx
+        unfold iterateImage; simp
+        rcases hx with rfl | rfl
+        · -- Show 0 is in the image.
+          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+          · use ⟨0, hn⟩; rw [hk, (h_cycle_prop k).1]
+          · use v; rw [hk, Nat.add_comm, Function.iterate_add_apply, (h_cycle_prop k).2, hf_v]
+        · -- Show v is in the image.
+          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+          · use v; rw [hk, Nat.add_comm, Function.iterate_add_apply, (h_cycle_prop k).1, hf0_v]
+          · use ⟨0, hn⟩; rw [hk, (h_cycle_prop k).2]
+      have : (iterateImage f (n-1)).card = 1 := h_tree
+      have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
+        simp [h_ne]
+      have := Finset.card_le_card h_img
+      rw [h_card2, h_tree] at this; omega
+    have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
+      show Int.natAbs (↑(f ⟨0, hn⟩).val - ↑(0 : ℕ)) = 0
+      rw [hf0]; simp
+    have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) = 
+           (Finset.range n) := by
+      ext k
+      simp
+      constructor
+      · rintro ⟨i, rfl⟩; simp; omega
+      · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
+        · use ⟨0, hn⟩; exact h0
+        · obtain ⟨i, hi, h_abs⟩ : ∃ (i : Fin n), i.val > 0 ∧ (Int.natAbs (↑(f i).val - ↑i.val)) = k := by
+            let idx : Fin n := ⟨k, by omega⟩
+            use idx; constructor; · omega
+            have hf_idx : f idx = ⟨0, hn⟩ := h_star idx (by omega)
+            rw [hf_idx]; simp [idx]; omega
+          use i; exact h_abs
+    rw [this]; simp
+  · -- General case using Phase 3-6
+    sorry
 
 end KRR

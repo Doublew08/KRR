@@ -1,6 +1,9 @@
 import KRR.Basic
 import KRR.Graceful
 import KRR.FunctionalReformulation
+import Mathlib.Tactic.FinCases
+import Mathlib.Tactic.Linarith
+import Mathlib.Data.Finset.Max
 
 /-!
 # Phase 6: Composition Lemma
@@ -20,13 +23,24 @@ variable {n : ℕ}
 
 /-- 
 Lemma 3.2 (Composition Lemma):
-If f is a tree function and its functional digraph has diameter ≥ 3,
-then the max distinct labels count is non-increasing under composition f ∘ f.
+If f is a tree function, the maximum number of distinct edge labels across 
+all vertex labelings σ is non-increasing under functional composition f ∘ f.
 -/
-theorem composition_lemma (f : Fin n → Fin n) (h_tree : IsTreeFunction f) 
-    (h_diam : funcDiameter f ≥ 3) :
-    ∀ k_f k_f2, IsMaxDistinctEdgeLabels f k_f → IsMaxDistinctEdgeLabels (f ∘ f) k_f2 →
-    k_f2 ≤ k_f :=
-sorry -- This is the core of the proof, to be filled in Phase 6.
+theorem composition_lemma (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f) :
+    (Finset.univ.image (fun σ : Equiv.Perm (Fin n) => (edgeLabelSet (conjugate f σ)).card)).max = 
+    (Finset.univ.image (fun σ : Equiv.Perm (Fin n) => (edgeLabelSet (conjugate (f ∘ f) σ)).card)).max := by
+  rcases n with rfl | n; · omega
+  rcases n with rfl | n
+  · -- Case n = 2
+    have : f = fun i => 0 := by
+      ext i; fin_cases i
+      · exact h_tree.1
+      · have : f 1 ≠ 1 := by
+          intro h; have := h_tree.2.1 1 (by omega)
+          simp [h] at this; omega
+        fin_cases (f 1); rfl
+    rw [this]
+    simp [conjugate, edgeLabelSet]
+  · sorry
 
 end KRR
