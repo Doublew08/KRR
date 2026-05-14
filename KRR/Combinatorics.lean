@@ -24,13 +24,13 @@ theorem card_perm_max_bounds_even (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m)) =>
       ∀ i : Fin (2 * m), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - 1 - i.val))).card = 
     (Nat.factorial m) ^ 2 := by
-  let a (i : Fin (2 * m)) : ℕ := max (i.val + 1) (2 * m - 1 - i.val)
-  -- The product formula count is invariant under permutation of bounds.
-  -- The sorted bounds are s_j = [m, m+1, m+1, ..., 2m-1, 2m-1, 2m] (using 1-based labels)
-  -- For count_perm_le_product, we use 0-based labels.
-  -- s'_j = [m-1, m, m, ..., 2m-2, 2m-2, 2m-1]
-  let s (j : Fin (2 * m)) : ℕ := if j.val % 2 = 0 then m + j.val / 2 else m + j.val / 2
+  -- By reordering the bounds to be monotonic [m, m, m+1, m+1, ..., 2m]
+  -- and applying the product formula, we obtain (m!)^2.
   sorry
+
+
+
+
 
 
 
