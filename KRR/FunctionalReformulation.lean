@@ -46,8 +46,8 @@ def signFunction (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
     (_ : Equiv.Perm (Fin n)) (i : Fin n) : Int :=
   let fi := conjugate f σ
   if fi i = i then 0
-  else if (fi i).val ≤ i.val then 1
-  else -1
+  else if (fi i).val < i.val then -1
+  else 1
 
 /-- **Theorem (Section 2.2):** The number of valid permutation bases fixing 0 is exactly
 `⌊(n-1)/2⌋! · ⌈(n-1)/2⌉!`.

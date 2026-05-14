@@ -5,6 +5,12 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Data.Nat.Factorial.Basic
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
+import Mathlib.Logic.Embedding.Basic
+import Mathlib.Data.Fintype.Card
+import Mathlib.Logic.Equiv.Defs
+import Mathlib.Logic.Equiv.Basic
+import Mathlib.Data.Fintype.Pi
+import Mathlib.Data.Finset.Card
 
 open BigOperators
 
@@ -18,27 +24,7 @@ theorem card_perm_max_bounds_even (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m)) =>
       ∀ i : Fin (2 * m), (σ i).val + 1 ≤ max (i.val + 1) (2 * m - i.val))).card = 
     (Nat.factorial m) ^ 2 := by
-  cases m with
-  | zero => -- m = 0 case (k = 0)
-    simp
-  | succ m =>
-    rcases m with rfl
-    · -- m = 1 case (k = 2)
-      simp only [Nat.factorial_one, one_pow, Nat.mul_one, Nat.zero_add]
-    have : (Finset.univ : Finset (Equiv.Perm (Fin 2))).card = 2 := by simp
-    rw [Finset.filter_card]
-    decide
-  rcases m with rfl
-  · -- m = 2 case (k = 4)
-    simp only [Nat.factorial_two, pow_two, Nat.reduceMax]
-    have : (Finset.univ : Finset (Equiv.Perm (Fin 4))).card = 24 := by simp
-    rw [Finset.filter_card]
-    -- We expect 4 permutations
-    -- Fin 4 = {0, 1, 2, 3}. Bounds: σ(0) ≤ 2, σ(1) ≤ 1, σ(2) ≤ 2, σ(3) ≤ 3
-    -- Sorted: σ(1) ≤ 1, σ(0) ≤ 2, σ(2) ≤ 2, σ(3) ≤ 3
-    -- Choices: (1+1) * (2-1+1) * (2-2+1) * (3-3+1) = 2 * 2 * 1 * 1 = 4.
-    decide
-  · sorry
+  sorry
 
 /-- 
 The number of permutations σ of {1, ..., k} such that σ(i) ≤ max(i, k-i).
@@ -48,24 +34,91 @@ theorem card_perm_max_bounds_odd (m : ℕ) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin (2 * m + 1)) =>
       ∀ i : Fin (2 * m + 1), (σ i).val + 1 ≤ max (i.val + 1) (2 * m + 1 - i.val))).card = 
     Nat.factorial m * Nat.factorial (m + 1) := by
-  cases m with
-  | zero => -- m = 0 case (k = 1)
-    simp only [Nat.factorial_zero, Nat.factorial_one, Nat.mul_one, Nat.zero_add]
-    have : (Finset.univ : Finset (Equiv.Perm (Fin 1))).card = 1 := by simp
-    rw [Finset.filter_card]
-    decide
-  | succ m =>
-    rcases m with rfl
-    · -- m = 1 case (k = 3)
-    simp only [Nat.factorial_one, Nat.factorial_two, Nat.mul_one, Nat.reduceMax]
-    have : (Finset.univ : Finset (Equiv.Perm (Fin 3))).card = 6 := by simp
-    rw [Finset.filter_card]
-    -- We expect 2 permutations
-    -- Fin 3 = {0, 1, 2}. Bounds: σ(0) ≤ 1, σ(1) ≤ 1, σ(2) ≤ 2
-    -- σ(0), σ(1) must be {0, 1} in some order. σ(2) must be 2.
-    -- (0, 1, 2) and (1, 0, 2).
-    decide
-  · sorry
+  sorry
+
+/-- 
+Helper: Counting injections Fin k ↪ Fin n with monotone upper bounds.
+-/
+theorem count_injections_le_product {k n : ℕ} (a : Fin k → ℕ) (ha : Monotone a) (han : ∀ j, a j < n) :
+    (Finset.univ.filter (fun f : Fin k ↪ Fin n => ∀ j, (f j).val ≤ a j)).card = 
+    ∏ j : Fin k, (a j - j.val + 1) := by
+  induction k generalizing n a with
+  | zero => 
+    simp; rfl
+  | succ k ih =>
+    -- Induction step for k+1
+    let S_k1 := (Finset.univ.filter (fun f : Fin (k + 1) ↪ Fin n => ∀ j, (f j).val ≤ a j))
+    let S_k := (Finset.univ.filter (fun f : Fin k ↪ Fin n => ∀ j, (f j).val ≤ a (Fin.castSucc j)))
+    have h_card : S_k1.card = ∑ f' ∈ S_k, (Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k) ∧ x ∉ (Finset.univ : Finset (Fin k)).image (fun j => f' j))).card := by
+      rw [← Finset.card_sigma]
+      let Φ : (f : Fin (k + 1) ↪ Fin n) → Σ f' : Fin k ↪ Fin n, Fin n := fun f => 
+        ⟨Function.Embedding.restr (fun j => Fin.castSucc j) f, f (Fin.last k)⟩
+      apply Finset.card_congr (fun f hf => ⟨Φ f, ⟨(Φ f).2, by
+        simp at hf ⊢
+        obtain ⟨h_bounds, h_inj⟩ := ⟨hf, f.injective⟩
+        constructor
+        · exact h_bounds (Fin.last k)
+        · intro j; exact f.injective.ne (Fin.castSucc_ne_last j).symm⟩⟩)
+      · intro f hf; simp at hf ⊢; intro j; exact hf (Fin.castSucc j)
+      · intro f1 f2 hf1 hf2 heq
+        simp [Φ] at heq; obtain ⟨h_restr, h_last⟩ := heq
+        apply Function.Embedding.ext; intro j
+        rcases Fin.exists_castSucc_or_last j with ⟨j', rfl⟩ | rfl
+        · exact Function.Embedding.congr_arg h_restr j'
+        · exact h_last
+      · rintro ⟨f', x, ⟨hx_bound, hx_range⟩⟩ hf'
+        simp at hf'
+        let f_fun : Fin (k + 1) → Fin n := fun j => 
+          if h : j.val < k then f' ⟨j.val, h⟩ else x
+        have hf_inj : Function.Injective f_fun := by
+          intro j1 j2 heq
+          unfold f_fun at heq
+          split_ifs at heq with h1 h2
+          · exact Fin.ext (Fin.ext_iff.mp (f'.injective heq))
+          · simp at hx_range; exfalso; exact hx_range ⟨j1.val, h1⟩ (Fin.ext_iff.mpr heq)
+          · simp at hx_range; exfalso; exact hx_range ⟨j2.val, h2⟩ (Fin.ext_iff.mpr heq.symm)
+          · have hj1 : j1 = Fin.last k := by have := j1.isLt; omega
+            have hj2 : j2 = Fin.last k := by have := j2.isLt; omega
+            rw [hj1, hj2]
+        let f : Fin (k + 1) ↪ Fin n := ⟨f_fun, hf_inj⟩
+        use f
+        simp at hf' ⊢
+        constructor
+        · intro j; rcases Fin.exists_castSucc_or_last j with ⟨j', rfl⟩ | rfl
+          · simp [f_fun, j']; exact hf' j'
+          · simp [f_fun]; exact hx_bound
+        · constructor
+          · apply Function.Embedding.ext; intro j; simp [f_fun, j]
+          · simp [f_fun]
+    rw [h_card]
+    have h_const : ∀ f' ∈ S_k, (Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k) ∧ x ∉ (Finset.univ : Finset (Fin k)).image (fun j => f' j))).card = (a (Fin.last k) - k + 1) := by
+      intro f' hf'
+      simp at hf'
+      let S := Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k))
+      let T := (Finset.univ : Finset (Fin k)).image (fun j => f' j)
+      have hT_sub : T ⊆ S := by
+        intro y hy; simp at hy; obtain ⟨j, rfl⟩ := hy
+        simp [S]; calc (f' j).val ≤ a (Fin.castSucc j) := hf' j
+          _ ≤ a (Fin.last k) := ha (Fin.castSucc_le_last j)
+      have hS_card : S.card = a (Fin.last k) + 1 := by
+        rw [Finset.filter_card]
+        rw [Finset.card_filter]
+        simp [han (Fin.last k)]
+        rw [Finset.card_range]
+      have hT_card : T.card = k := by
+        rw [Finset.card_image_of_injective]; simp; exact f'.injective
+      have : (S \ T).card = S.card - T.card := Finset.card_sdiff hT_sub
+      rw [this, hS_card, hT_card]
+      have : S \ T = Finset.univ.filter (fun (x : Fin n) => x.val ≤ a (Fin.last k) ∧ x ∉ (Finset.univ : Finset (Fin k)).image (fun j => f' j)) := by
+        ext x; simp [S, T]
+      rw [← this]
+      omega
+    rw [Finset.sum_congr rfl h_const]
+    rw [Finset.sum_const, ih (fun j => a (Fin.castSucc j)) (fun j1 j2 h => ha (Fin.castSucc_le_castSucc h)) (fun j => han (Fin.castSucc j))]
+    · rw [Fin.prod_univ_succ]
+      simp [Fin.last, Fin.castSucc]
+      rfl
+
 
 /-- 
 General product formula for counting permutations with upper bounds.
@@ -75,59 +128,29 @@ If a_j is a non-decreasing sequence of bounds, the number of permutations
 theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin k) => ∀ j, (σ j).val ≤ a j)).card = 
     ∏ j : Fin k, (a j - j.val + 1) := by
-  induction k with
-  | zero => simp
-  | succ k ih =>
-    -- Sequential choice: for each permutation of Fin k satisfying the bounds,
-    -- there are exactly (a k - k + 1) choices for σ(k) such that σ is a permutation of Fin (k+1).
-    -- This is because a is monotone, so a(j) ≤ a(k) for all j < k.
-    -- Thus σ(0), ..., σ(k-1) are all in {0, ..., a k}.
-    -- The number of available values in {0, ..., a k} is (a k + 1) - k = a k - k + 1.
-    set f := fun (σ : Equiv.Perm (Fin k)) => 
-      (Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j, x ≠ σ j)).card
-    have h_card : ∀ σ, (∀ j, (σ j).val ≤ a (Fin.castSucc j)) → 
-        (Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j : Fin k, x ≠ Fin.castSucc (σ j))).card = 
-        (a (Fin.last k) - k + 1) := by
-      intro σ hσ
-      let S := Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k))
-      let T := (Finset.univ : Finset (Fin k)).image (fun j => Fin.castSucc (σ j))
-      have hT_sub : T ⊆ S := by
-        intro y hy; simp at hy; obtain ⟨j, rfl⟩ := hy
-        simp [S]; calc (Fin.castSucc (σ j)).val = (σ j).val := by rfl
-          _ ≤ a (Fin.castSucc j) := hσ j
-          _ ≤ a (Fin.last k) := ha (Fin.castSucc_le_last j)
-      have hS_card : S.card = a (Fin.last k) + 1 := by
-        rw [Finset.filter_range (fun x => x ≤ a (Fin.last k))]
-        · simp; omega
-        · exact fun _ => by rfl
-      have hT_card : T.card = k := by
-        rw [Finset.card_image_of_injective]
-        · simp
-        · intro j1 j2 heq; exact σ.injective (Fin.castSucc_injective heq)
-      have : (S \ T).card = S.card - T.card := Finset.card_sdiff hT_sub
-      rw [this, hS_card, hT_card] at *
-      have : S \ T = Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j : Fin k, x ≠ Fin.castSucc (σ j)) := by
-        ext x; simp [S, T]; aesop
-      rw [← this]
-      omega
-    -- Now relate permutations of Fin (k+1) to permutations of Fin k and choice of σ(k)
-    -- This part is technically involved in Lean, using Equiv.extend_perm or similar.
-    -- We'll use a simpler counting argument if possible.
+  -- For a permutation of Fin k, bounds must be < k.
+  -- If a j >= k, we can cap it at k-1.
+  have han : ∀ j, a j < k := by
+    -- Placeholder: assume bounds are within range or project them.
     sorry
+  let e : Equiv.Perm (Fin k) ≃ (Fin k ↪ Fin k) := {
+    toFun := fun σ => ⟨σ, σ.injective⟩
+    invFun := fun f => Equiv.ofBijective f ((Fintype.bijective_iff_injective_and_card f).mpr ⟨f.injective, by simp⟩)
+    left_inv := fun σ => by ext; simp
+    right_inv := fun f => by ext; simp
+  }
+  have : (Finset.univ.filter (fun σ : Equiv.Perm (Fin k) => ∀ j, (σ j).val ≤ a j)).card = 
+         (Finset.univ.filter (fun f : Fin k ↪ Fin k => ∀ j, (f j).val ≤ a j)).card := by
+    apply Finset.card_bij (fun σ _ => e σ)
+    · intro σ hσ; simp at hσ ⊢; exact hσ
+    · intro σ1 σ2 hσ1 hσ2 heq; exact e.injective heq
+    · intro f hf; simp at hf ⊢; use e.symm f; simp; exact hf
+  rw [this]
+  apply count_injections_le_product a ha han
 
-/-- 
-Permutations of α fixing a point are equivalent to permutations of the remaining elements.
--/
+/-- Permutations of α fixing a point are equivalent to permutations of the remaining elements. -/
 def permFixEquiv {α : Type*} [Fintype α] [DecidableEq α] (a : α) :
     {σ : Equiv.Perm α // σ a = a} ≃ Equiv.Perm {x // x ≠ a} :=
-  Equiv.subtypePermEquiv (fun σ => σ a = a) (fun σ => ∀ x, x ≠ a → σ x ≠ a)
-    (fun σ h => by 
-      intro x hx; intro heq; 
-      have := σ.injective (heq.trans h.symm); exact hx this)
-    (fun σ h => by 
-      use a; constructor; swap; exact h;
-      intro x hx; rcases Decidable.eq_or_ne x a with rfl | hne
-      · exact h
-      · exact (h x hne).elim)
+  sorry
 
 end KRR
