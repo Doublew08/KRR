@@ -268,7 +268,10 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
           · use ⟨0, hn⟩; rw [hk, (h_cycle_prop k).2]
       have : (iterateImage f (n-1)).card = 1 := h_tree
       have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
-        simp [h_ne]
+        simp [Finset.card_eq_two]
+        use ⟨0, hn⟩, v
+        refine ⟨?_, rfl⟩
+        intro h; rw [h] at hf0_v; exact h_ne hf0_v
       have := Finset.card_le_card h_img
       rw [h_card2, h_tree] at this; omega
     have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
@@ -279,7 +282,7 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
       ext k
       simp
       constructor
-      · rintro ⟨i, rfl⟩; simp; omega
+      · rintro ⟨i, rfl⟩; simp only [Finset.mem_range]; omega
       · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
         · use ⟨0, hn⟩; exact h0
         · obtain ⟨i, hi, h_abs⟩ : ∃ (i : Fin n), i.val > 0 ∧ (Int.natAbs (↑(f i).val - ↑i.val)) = k := by

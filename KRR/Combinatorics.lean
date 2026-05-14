@@ -78,9 +78,41 @@ theorem count_perm_le_product {k : ℕ} (a : Fin k → ℕ) (ha : Monotone a) :
   induction k with
   | zero => simp
   | succ k ih =>
-    let S := Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ j, (σ j).val ≤ a j)
-    let f (σ : Equiv.Perm (Fin (k + 1))) : Fin k → Fin k := sorry -- Relabeling
-    -- Use the fact that for each σ' on Fin k, there are (a k - k + 1) extensions.
+    -- Sequential choice: for each permutation of Fin k satisfying the bounds,
+    -- there are exactly (a k - k + 1) choices for σ(k) such that σ is a permutation of Fin (k+1).
+    -- This is because a is monotone, so a(j) ≤ a(k) for all j < k.
+    -- Thus σ(0), ..., σ(k-1) are all in {0, ..., a k}.
+    -- The number of available values in {0, ..., a k} is (a k + 1) - k = a k - k + 1.
+    set f := fun (σ : Equiv.Perm (Fin k)) => 
+      (Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j, x ≠ σ j)).card
+    have h_card : ∀ σ, (∀ j, (σ j).val ≤ a (Fin.castSucc j)) → 
+        (Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j : Fin k, x ≠ Fin.castSucc (σ j))).card = 
+        (a (Fin.last k) - k + 1) := by
+      intro σ hσ
+      let S := Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k))
+      let T := (Finset.univ : Finset (Fin k)).image (fun j => Fin.castSucc (σ j))
+      have hT_sub : T ⊆ S := by
+        intro y hy; simp at hy; obtain ⟨j, rfl⟩ := hy
+        simp [S]; calc (Fin.castSucc (σ j)).val = (σ j).val := by rfl
+          _ ≤ a (Fin.castSucc j) := hσ j
+          _ ≤ a (Fin.last k) := ha (Fin.castSucc_le_last j)
+      have hS_card : S.card = a (Fin.last k) + 1 := by
+        rw [Finset.filter_range (fun x => x ≤ a (Fin.last k))]
+        · simp; omega
+        · exact fun _ => by rfl
+      have hT_card : T.card = k := by
+        rw [Finset.card_image_of_injective]
+        · simp
+        · intro j1 j2 heq; exact σ.injective (Fin.castSucc_injective heq)
+      have : (S \ T).card = S.card - T.card := Finset.card_sdiff hT_sub
+      rw [this, hS_card, hT_card] at *
+      have : S \ T = Finset.univ.filter (fun (x : Fin (k + 1)) => x.val ≤ a (Fin.last k) ∧ ∀ j : Fin k, x ≠ Fin.castSucc (σ j)) := by
+        ext x; simp [S, T]; aesop
+      rw [← this]
+      omega
+    -- Now relate permutations of Fin (k+1) to permutations of Fin k and choice of σ(k)
+    -- This part is technically involved in Lean, using Equiv.extend_perm or similar.
+    -- We'll use a simpler counting argument if possible.
     sorry
 
 /-- 
