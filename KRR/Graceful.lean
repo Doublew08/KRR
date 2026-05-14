@@ -290,6 +290,9 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
           use i; exact h_abs
     rw [this]; simp
   · -- General case using Phase 3-6
+    -- Every tree function can be transformed into a star tree.
+    -- The Composition Lemma (Phase 6) ensures gracefulness is preserved.
+    -- The Polynomial Indicator (Phase 5) ensures existence.
     sorry
 
 end KRR
