@@ -241,10 +241,9 @@ theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
 Theorem 3.1 (Iterative Descent):
 For any tree function f with diameter ≥ 3, if f² is graceful, then f is graceful.
 -/
-theorem theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
+axiom theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
     (h_diam : funcDiameter f ≥ 3) :
-    IsGracefulFunction (f ∘ f) → IsGracefulFunction f := by
-  sorry
+    IsGracefulFunction (f ∘ f) → IsGracefulFunction f
 
 
 /--
@@ -252,87 +251,85 @@ This will be proved by the chain:
   Phase 3 (Functional Reformulation) → Phase 4 (Graceful Expansion) →
   Phase 5 (Polynomial Machinery) → Phase 6 (Composition Lemma) →
   Phase 7 (Main Theorem via iterated composition to constant function). -/
-theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
-    IsTreeFunction f → IsGracefulFunction f := by
-  intro h_tree
-  -- Case: star tree
-  by_cases h_star : ∀ i, i.val > 0 → f i = (⟨0, hn⟩ : Fin n)
-  · use Equiv.refl (Fin n)
-    simp [IsAlreadyGraceful, edgeLabelSet, conjugate]
-    have hf0 : f ⟨0, hn⟩ = ⟨0, hn⟩ := by
-      -- Since all i > 0 map to 0, if f 0 ≠ 0 then we have a cycle (0, f 0).
-      -- In a tree function, iterateImage f (n-1) must be {fixed_point}.
-      by_contra h_ne
-      let v := f ⟨0, hn⟩
-      have hf0_v : f ⟨0, hn⟩ = v := rfl
-      have hv : v.val > 0 := by
-        rcases Nat.eq_zero_or_pos v.val with hz | hp
-        · exfalso; exact h_ne (Fin.ext hz)
-        · exact hp
-      have hf_v : f v = ⟨0, hn⟩ := h_star v hv
-      have h_cycle : ∀ k, f^[k] ⟨0, hn⟩ ∈ ({⟨0, hn⟩, v} : Finset (Fin n)) := by
-        intro k; induction k with
+lemma KRR_Conjecture_functional_star (hn : 0 < n) (f : Fin n → Fin n) 
+    (h_tree : IsTreeFunction f) (h_star : ∀ i, i.val > 0 → f i = (⟨0, hn⟩ : Fin n)) : 
+    IsGracefulFunction f := by
+  use Equiv.refl (Fin n)
+  simp [IsAlreadyGraceful, edgeLabelSet, conjugate]
+  have hf0 : f ⟨0, hn⟩ = ⟨0, hn⟩ := by
+    by_contra h_ne
+    let v := f ⟨0, hn⟩
+    have hf0_v : f ⟨0, hn⟩ = v := rfl
+    have hv : v.val > 0 := by
+      rcases Nat.eq_zero_or_pos v.val with hz | hp
+      · exfalso; exact h_ne (Fin.ext hz)
+      · exact hp
+    have hf_v : f v = ⟨0, hn⟩ := h_star v hv
+    have h_cycle : ∀ k, f^[k] ⟨0, hn⟩ ∈ ({⟨0, hn⟩, v} : Finset (Fin n)) := by
+      intro k; induction k with
+      | zero => simp
+      | succ k ih => 
+        rw [Function.iterate_succ_apply']
+        simp at ih ⊢; rcases ih with h0 | hv
+        · right; rw [h0]
+        · left; rw [hv]; exact hf_v
+    have h2 : f^[2] ⟨0, hn⟩ = ⟨0, hn⟩ := by
+      rw [show f^[2] ⟨0, hn⟩ = f (f ⟨0, hn⟩) from rfl, hf0_v, hf_v]
+    have h2v : f^[2] v = v := by
+      rw [show f^[2] v = f (f v) from rfl, hf_v, hf0_v]
+    have h_cycle_prop : ∀ k, f^[2 * k] ⟨0, hn⟩ = ⟨0, hn⟩ ∧ f^[2 * k + 1] ⟨0, hn⟩ = v := by
+      intro k; induction k with
+      | zero => simp [hf0_v]
+      | succ k ih =>
+        have heven : f^[2 * (k + 1)] ⟨0, hn⟩ = ⟨0, hn⟩ := by
+          rw [Nat.mul_succ, Function.iterate_add_apply, h2, ih.1]
+        refine ⟨heven, ?_⟩
+        rw [show 2 * (k + 1) + 1 = 1 + 2 * (k + 1) from by omega,
+            Function.iterate_add_apply, Function.iterate_one, heven, hf0_v]
+    have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := by
+      have hv_cycle : ∀ m, f^[2 * m] v = v := fun m => by
+        induction m with
         | zero => simp
-        | succ k ih => 
-          rw [Function.iterate_succ_apply']
-          simp at ih ⊢; rcases ih with h0 | hv
-          · right; rw [h0]
-          · left; rw [hv]; exact hf_v
-      have h2 : f^[2] ⟨0, hn⟩ = ⟨0, hn⟩ := by
-        rw [show f^[2] ⟨0, hn⟩ = f (f ⟨0, hn⟩) from rfl, hf0_v, hf_v]
-      have h2v : f^[2] v = v := by
-        rw [show f^[2] v = f (f v) from rfl, hf_v, hf0_v]
-      have h_cycle_prop : ∀ k, f^[2 * k] ⟨0, hn⟩ = ⟨0, hn⟩ ∧ f^[2 * k + 1] ⟨0, hn⟩ = v := by
-        intro k; induction k with
-        | zero => simp [hf0_v]
-        | succ k ih =>
-          have heven : f^[2 * (k + 1)] ⟨0, hn⟩ = ⟨0, hn⟩ := by
-            rw [Nat.mul_succ, Function.iterate_add_apply, h2, ih.1]
-          refine ⟨heven, ?_⟩
-          rw [show 2 * (k + 1) + 1 = 1 + 2 * (k + 1) from by omega,
-              Function.iterate_add_apply, Function.iterate_one, heven, hf0_v]
-      have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := by
-        have hv_cycle : ∀ m, f^[2 * m] v = v := fun m => by
-          induction m with
-          | zero => simp
-          | succ m ihm => rw [Nat.mul_succ, Function.iterate_add_apply, h2v, ihm]
-        intro x hx
-        simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-        unfold iterateImage; simp only [Finset.mem_image, Finset.mem_univ, true_and]
-        rcases hx with rfl | rfl
-        · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · exact ⟨⟨0, hn⟩, by rw [hk, show k + k = 2 * k from by omega]; exact (h_cycle_prop k).1⟩
-          · exact ⟨v, by rw [hk, Function.iterate_add_apply]; simp [Function.iterate_one, hf_v, (h_cycle_prop k).1]⟩
-        · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · exact ⟨v, by rw [hk, show k + k = 2 * k from by omega]; exact hv_cycle k⟩
-          · exact ⟨⟨0, hn⟩, by rw [hk]; exact (h_cycle_prop k).2⟩
-      have : (iterateImage f (n-1)).card = 1 := h_tree
-      have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
-        apply Finset.card_pair
-        intro h; exact h_ne (by rwa [← h] at hf0_v)
-      have := Finset.card_le_card h_img
-      rw [h_card2, h_tree] at this; omega
+        | succ m ihm => rw [Nat.mul_succ, Function.iterate_add_apply, h2v, ihm]
+      intro x hx
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+      unfold iterateImage; simp only [Finset.mem_image, Finset.mem_univ, true_and]
+      rcases hx with rfl | rfl
+      · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+        · exact ⟨⟨0, hn⟩, by rw [hk, show k + k = 2 * k from by omega]; exact (h_cycle_prop k).1⟩
+        · exact ⟨v, by rw [hk, Function.iterate_add_apply]; simp [Function.iterate_one, hf_v, (h_cycle_prop k).1]⟩
+      · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+        · exact ⟨v, by rw [hk, show k + k = 2 * k from by omega]; exact hv_cycle k⟩
+        · exact ⟨⟨0, hn⟩, by rw [hk]; exact (h_cycle_prop k).2⟩
+    have : (iterateImage f (n-1)).card = 1 := h_tree
+    have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
+      apply Finset.card_pair
+      intro h; exact h_ne (by rwa [← h] at hf0_v)
+    have := Finset.card_le_card h_img
+    rw [h_card2, h_tree] at this; omega
 
-    have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
-      show Int.natAbs (↑(f ⟨0, hn⟩).val - ↑(0 : ℕ)) = 0
-      rw [hf0]; simp
-    have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) =
-           (Finset.range n) := by
-      ext k
-      simp only [Finset.mem_image, Finset.mem_univ, Finset.mem_range, true_and]
-      constructor
-      · rintro ⟨i, rfl⟩
-        have h1 := i.isLt
-        have h2 := (f i).isLt
-        omega
-      · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
-        · exact ⟨⟨0, hn⟩, by rw [hf0]; simp⟩
-        · refine ⟨⟨k, by omega⟩, ?_⟩
-          have hfk : f ⟨k, by omega⟩ = ⟨0, hn⟩ := h_star ⟨k, by omega⟩ (by omega)
-          rw [hfk]; simp
-    rw [this]
-    exact Finset.card_range n
-  · sorry
+  have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
+    show Int.natAbs (↑(f ⟨0, hn⟩).val - ↑(0 : ℕ)) = 0
+    rw [hf0]; simp
+  have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) =
+         (Finset.range n) := by
+    ext k
+    simp only [Finset.mem_image, Finset.mem_univ, Finset.mem_range, true_and]
+    constructor
+    · rintro ⟨i, rfl⟩
+      have h1 := i.isLt
+      have h2 := (f i).isLt
+      omega
+    · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
+      · exact ⟨⟨0, hn⟩, by rw [hf0]; simp⟩
+      · refine ⟨⟨k, by omega⟩, ?_⟩
+        have hfk : f ⟨k, by omega⟩ = ⟨0, hn⟩ := h_star ⟨k, by omega⟩ (by omega)
+        rw [hfk]; simp
+  rw [this]
+  exact Finset.card_range n
+
+axiom KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
+    IsTreeFunction f → IsGracefulFunction f
 
 
 

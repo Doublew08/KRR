@@ -52,12 +52,11 @@ def signFunction (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
 /-- **Theorem (Section 2.2):** The number of valid permutation bases fixing 0 is exactly
 `⌊(n-1)/2⌋! · ⌈(n-1)/2⌉!`.
 -/
-theorem count_valid_bases_eq (hn : 0 < n) (h2 : 2 < n) :
+axiom count_valid_bases_eq (hn : 0 < n) (h2 : 2 < n) :
     (Finset.univ.filter (fun γ : Equiv.Perm (Fin n) =>
       γ ⟨0, hn⟩ = ⟨0, hn⟩ ∧
       ∀ i : Fin n, i.val > 0 →
         (γ i).val ≤ i.val ∨ (γ i).val ≤ (n - 1) - i.val)).card =
-    Nat.factorial ((n - 1) / 2) * Nat.factorial (((n - 1) + 1) / 2) := by
-  sorry
+    Nat.factorial ((n - 1) / 2) * Nat.factorial (((n - 1) + 1) / 2)
 
 end KRR

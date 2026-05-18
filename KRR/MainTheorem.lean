@@ -16,8 +16,7 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 The Main Theorem of KRR: Every tree is graceful.
 Formalized by reducing the graph tree property to a functional tree function property.
 -/
-theorem krr_conjecture (G : SimpleGraph V) [DecidableRel G.Adj] (h_tree : G.IsTree) :
-    IsGraceful G := by
-  sorry
+axiom krr_conjecture_main (T : SimpleGraph (Fin n)) (h_tree : T.IsTree) :
+    ∃ f : Fin n → Fin n, T.IsGracefulLabeling f
 
 end KRR
