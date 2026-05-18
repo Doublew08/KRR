@@ -1,0 +1,239 @@
+⚠ [1250/1262] Replayed KRR.Graceful
+warning: KRR/Graceful.lean:88:15: This simp argument is unused:
+  Int.natAbs_neg
+
+Hint: Omit it from the simp argument list.
+  simp only [̵I̵n̵t̵.̵n̵a̵t̵A̵b̵s̵_̵n̵e̵g̵,̵ ̵I̵n̵t̵.̵n̵a̵t̵A̵b̵s̵_̵n̵a̵t̵C̵a̵s̵t̵]̵[̲I̲n̲t̲.̲n̲a̲t̲A̲b̲s̲_̲n̲a̲t̲C̲a̲s̲t̲]̲ at hab
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: KRR/Graceful.lean:88:31: This simp argument is unused:
+  Int.natAbs_natCast
+
+Hint: Omit it from the simp argument list.
+  simp only [Int.natAbs_neg,̵ ̵I̵n̵t̵.̵n̵a̵t̵A̵b̵s̵_̵n̵a̵t̵C̵a̵s̵t̵] at hab
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: KRR/Graceful.lean:124:8: declaration uses `sorry`
+warning: KRR/Graceful.lean:134:8: declaration uses `sorry`
+warning: KRR/Graceful.lean:145:8: declaration uses `sorry`
+warning: KRR/Graceful.lean:151:4: 'simp [IsAlreadyGraceful, edgeLabelSet, conjugate]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:152:4: 'have hf0 : f ⟨0, hn⟩ = ⟨0, hn⟩ := by
+  -- Since all i > 0 map to 0, if f 0 ≠ 0 then we have a cycle (0, f 0).
+        -- In a tree function, iterateImage f (n-1) must be {fixed_point}.
+  
+  by_contra h_ne
+  let v := f ⟨0, hn⟩
+  have hf0_v : f ⟨0, hn⟩ = v := rfl
+  have hv : v.val > 0 := by
+    rcases Nat.eq_zero_or_pos v.val with hz | hp
+    · exfalso; exact h_ne (Fin.ext hz)
+    · exact hp
+  have hf_v : f v = ⟨0, hn⟩ := h_star v hv
+  have h_cycle : ∀ k, f^[k] ⟨0, hn⟩ ∈ ({⟨0, hn⟩, v} : Finset (Fin n)) := by intro k;
+    induction k with
+    | zero => simp
+    | succ k ih =>
+      rw [Function.iterate_succ_apply']
+      simp at ih ⊢; rcases ih with h0 | hv
+      · right; rw [h0]
+      · left; rw [hv]; exact hf_v
+  have h2 : f^[2] ⟨0, hn⟩ = ⟨0, hn⟩ := by rw [show f^[2] ⟨0, hn⟩ = f (f ⟨0, hn⟩) from rfl, hf0_v, hf_v]
+  have h2v : f^[2] v = v := by rw [show f^[2] v = f (f v) from rfl, hf_v, hf0_v]
+  have h_cycle_prop : ∀ k, f^[2 * k] ⟨0, hn⟩ = ⟨0, hn⟩ ∧ f^[2 * k + 1] ⟨0, hn⟩ = v := by intro k;
+    induction k with
+    | zero => simp [hf0_v]
+    | succ k
+      ih =>
+      have heven : f^[2 * (k + 1)] ⟨0, hn⟩ = ⟨0, hn⟩ := by rw [Nat.mul_succ, Function.iterate_add_apply, h2, ih.1]
+      refine ⟨heven, ?_⟩
+      rw [show 2 * (k + 1) + 1 = 1 + 2 * (k + 1) from by omega, Function.iterate_add_apply, Function.iterate_one, heven,
+        hf0_v]
+  have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) :=
+    by
+    have hv_cycle : ∀ m, f^[2 * m] v = v := fun m => by
+      induction m with
+      | zero => simp
+      | succ m ihm => rw [Nat.mul_succ, Function.iterate_add_apply, h2v, ihm]
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    unfold iterateImage; simp only [Finset.mem_image, Finset.mem_univ, true_and]
+    rcases hx with rfl | rfl
+    · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+      · exact ⟨⟨0, hn⟩, by rw [hk, show k + k = 2 * k from by omega]; exact (h_cycle_prop k).1⟩
+      · exact ⟨v, by rw [hk, Function.iterate_add_apply]; simp [Function.iterate_one, hf_v, (h_cycle_prop k).1]⟩
+    · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+      · exact ⟨v, by rw [hk, show k + k = 2 * k from by omega]; exact hv_cycle k⟩
+      · exact ⟨⟨0, hn⟩, by rw [hk]; exact (h_cycle_prop k).2⟩
+  have : (iterateImage f (n - 1)).card = 1 := h_tree
+  have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 :=
+    by
+    apply Finset.card_pair
+    intro h; exact h_ne (by rwa [← h] at hf0_v)
+  have := Finset.card_le_card h_img
+  rw [h_card2, h_tree] at this; omega' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:168:24: 'rcases ih with h0 | hv' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying 'ih'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:168:24: 'rcases ih with h0 | hv' uses 'ih'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:169:12: 'right' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:169:19: 'rw [h0]' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:170:12: 'left' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:170:18: 'rw [hv]' uses '⊢'!
+warning: KRR/Graceful.lean:168:10: 'simp at ih ⊢' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:168:10: Try this:
+  [apply] simp only [Finset.mem_insert, Finset.mem_singleton] at ih ⊢
+info: KRR/Graceful.lean:170:27: 'exact hf_v' uses '⊢'!
+warning: KRR/Graceful.lean:151:4: 'simp [IsAlreadyGraceful, edgeLabelSet, conjugate]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:209:4: 'have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) = (Finset.range n) :=
+  by
+  ext k
+  simp only [Finset.mem_image, Finset.mem_univ, Finset.mem_range, true_and]
+  constructor
+  · rintro ⟨i, rfl⟩
+    have h1 := i.isLt
+    have h2 := (f i).isLt
+    omega
+  · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
+    · exact ⟨⟨0, hn⟩, by rw [hf0]; simp⟩
+    · refine ⟨⟨k, by omega⟩, ?_⟩
+      have hfk : f ⟨k, by omega⟩ = ⟨0, hn⟩ := h_star ⟨k, by omega⟩ (by omega)
+      rw [hfk]; simp' uses '⊢'!
+warning: KRR/Graceful.lean:151:4: 'simp [IsAlreadyGraceful, edgeLabelSet, conjugate]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:223:4: 'rw [this]' uses '⊢'!
+warning: KRR/Graceful.lean:151:4: 'simp [IsAlreadyGraceful, edgeLabelSet, conjugate]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: KRR/Graceful.lean:224:4: 'exact Finset.card_range n' uses '⊢'!
+warning: KRR/Graceful.lean:195:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: KRR/Graceful.lean:207:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+
+Note: This linter can be disabled with `set_option linter.style.show false`
+⚠ [1251/1262] Replayed KRR.Combinatorics
+warning: KRR/Combinatorics.lean:17:8: declaration uses `sorry`
+warning: KRR/Combinatorics.lean:26:8: declaration uses `sorry`
+warning: KRR/Combinatorics.lean:35:8: declaration uses `sorry`
+warning: KRR/Combinatorics.lean:43:8: declaration uses `sorry`
+⚠ [1261/1262] Replayed KRR.FunctionalReformulation
+warning: KRR/FunctionalReformulation.lean:55:8: declaration uses `sorry`
+✖ [1262/1262] Building KRR.GracefulExpansion (12s)
+trace: .> LEAN_PATH=C:\Math\KRR\.lake\packages\Cli\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\batteries\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\Qq\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\aesop\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\proofwidgets\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\importGraph\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\LeanSearchClient\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\plausible\.lake\build\lib\lean;C:\Math\KRR\.lake\packages\mathlib\.lake\build\lib\lean;C:\Math\KRR\.lake\build\lib\lean c:\Users\admin\.elan\toolchains\leanprover--lean4---v4.29.1\bin\lean.exe C:\Math\KRR\KRR\GracefulExpansion.lean -o C:\Math\KRR\.lake\build\lib\lean\KRR\GracefulExpansion.olean -i C:\Math\KRR\.lake\build\lib\lean\KRR\GracefulExpansion.ilean -c C:\Math\KRR\.lake\build\ir\KRR\GracefulExpansion.c --setup C:\Math\KRR\.lake\build\ir\KRR\GracefulExpansion.setup.json --json
+error: KRR/GracefulExpansion.lean:39:8: Tactic `split_ifs` failed: no if-then-else conditions to split
+
+n : ℕ
+hn : 1 < n
+f : Fin n → Fin n
+σ : Equiv.Perm (Fin n)
+h_tree : IsTreeFunction f
+h_graceful : IsAlreadyGraceful (conjugate f σ)
+h_canonical : IsCanonicalTreeFunction ⋯ (conjugate f σ)
+γ : Equiv.Perm (Fin n)
+i : Fin n
+g : Fin n → Fin n := conjugate f σ
+⊢ (↑↑i +
+        (have fi := conjugate f σ;
+          if fi i = i then 0 else if ↑(fi i) < ↑i then -1 else 1) *
+          ↑↑(γ i)).natAbs =
+    ↑(conjugate f σ i)
+error: KRR/GracefulExpansion.lean:62:54: Type mismatch
+  Finset.range n
+has type
+  Finset ℕ
+but is expected to have type
+  Finset (Fin n)
+error: KRR/GracefulExpansion.lean:66:13: failed to synthesize instance of type class
+  Membership (Fin n) (Finset ℕ)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: KRR/GracefulExpansion.lean:68:10: Unknown constant `Fintype.injective_iff_surjective.mpr`
+error: KRR/GracefulExpansion.lean:70:57: Unknown constant `Fintype.injective_iff_bijective.mpr`
+error: KRR/GracefulExpansion.lean:77:19: failed to synthesize instance of type class
+  OfNat (Fin n) 0
+numerals are polymorphic in Lean, but the numeral `0` cannot be used in a context where the expected type is
+  Fin n
+due to the absence of the instance above
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: KRR/GracefulExpansion.lean:77:23: failed to synthesize instance of type class
+  OfNat (Fin n) 0
+numerals are polymorphic in Lean, but the numeral `0` cannot be used in a context where the expected type is
+  Fin n
+due to the absence of the instance above
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: KRR/GracefulExpansion.lean:78:6: `simp` made no progress
+error: KRR/GracefulExpansion.lean:96:38: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  d ≥ 0
+  c ≥ 0
+  c ≥ 1
+  c + d ≥ 0
+  b ≥ 0
+  b - c - d ≤ -1
+  a ≥ 2
+  a - b ≥ 1
+  a - c - d ≥ 1
+  a - d ≥ 1
+where
+ a := ↑n
+ b := ↑↑(conjugate f σ i)
+ c := ↑(↑i - ↑(g i))
+ d := ↑↑(g i)
+error: KRR/GracefulExpansion.lean:101:39: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  d ≥ 0
+  c ≥ 0
+  c - d ≥ 1
+  b ≥ 0
+  b - c ≥ 1
+  a ≥ 2
+  a - b ≥ 1
+  a - c ≥ 1
+  a - d ≥ 1
+where
+ a := ↑n
+ b := ↑↑(conjugate f σ i)
+ c := ↑↑i
+ d := ↑↑(g i)
+error: Lean exited with code 1
+Some required targets logged failures:
+- KRR.GracefulExpansion
+error: build failed

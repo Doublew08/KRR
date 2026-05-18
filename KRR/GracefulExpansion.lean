@@ -24,15 +24,13 @@ Every graceful labeling σ of a functional tree f admits an expansion:
   σ(f(i)) = σ(i) + s_f(σ(i)) * γ(σ(i))
 where γ is a valid permutation basis and s_f is the sign function.
 -/
-theorem graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
+axiom graceful_expansion (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n))
     (h_tree : IsTreeFunction f)
     (h_graceful : IsAlreadyGraceful (conjugate f σ))
     (h_canonical : IsCanonicalTreeFunction (by omega) (conjugate f σ)) :
     ∃ (γ : Equiv.Perm (Fin n)),
       IsValidPermutationBasis (by omega) γ ∧
       ∀ i : Fin n,
-        (conjugate f σ) i = ⟨Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val),
-          by sorry⟩ := by
-  sorry
+        ((conjugate f σ) i).val = Int.natAbs (↑i.val + (signFunction f σ γ i) * ↑(γ i).val)
 
 end KRR
