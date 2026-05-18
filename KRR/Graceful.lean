@@ -106,7 +106,7 @@ lemma natAbs_sub_comm (a b : ℕ) :
 `f : V → {0,...,m}` where `m = |E(G)|` such that the induced edge labels
 `{|f(u) - f(v)| : {u,v} ∈ E(G)}` are distinct and cover `{1,...,m}`.
 This is the classical statement used in the final KRR theorem. -/
-def IsGraceful' {V : Type*} [Fintype V] [DecidableEq V]
+def IsGraceful {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [inst : DecidableRel G.Adj] : Prop :=
   let m := G.edgeFinset.card
   ∃ f : V → ℕ,
@@ -124,83 +124,118 @@ induces a classically graceful labeling on its undirected graph. -/
 theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
     (hf_canon : IsCanonicalTreeFunction (by omega) f)
     (hf_grace : IsAlreadyGraceful f) :
-    IsGraceful' (treeGraphOfFunction f) := by
+    IsGraceful (treeGraphOfFunction f) := by
   let G := treeGraphOfFunction f
-  let m := n - 1
-  -- 1. Prove edge count is n - 1
-  have h_edge_card : G.edgeFinset.card = m := by
-    let S := (Finset.univ.filter (fun i => i.val > 0)).image (fun i => Quot.mk (Sym2.Rel (Fin n)) (i, f i))
-    have hS : G.edgeFinset = S := by
-      ext e
-      simp only [SimpleGraph.mem_edgeFinset, treeGraphOfFunction, Finset.mem_image, Finset.mem_univ, Finset.mem_filter, true_and]
+  let hn' : 0 < n := by omega
+  -- edgeLabelSet f = Finset.range n (n distinct values all < n)
+  have hlabels : edgeLabelSet f = Finset.range n := by
+    apply Finset.eq_of_subset_of_card_le
+    · intro k hk
+      simp only [edgeLabelSet, Finset.mem_image, Finset.mem_univ, true_and] at hk
+      obtain ⟨i, rfl⟩ := hk
+      simp only [Finset.mem_range]
+      have h1 := i.isLt; have h2 := (f i).isLt
+      rcases Nat.lt_or_ge (f i).val i.val with h | h
+      · rw [show (↑(f i).val - ↑i.val : ℤ) = -↑(i.val - (f i).val) by push_cast; omega]
+        simp [Int.natAbs_neg, Int.natAbs_natCast]; omega
+      · rw [show (↑(f i).val - ↑i.val : ℤ) = ↑((f i).val - i.val) by push_cast; omega]
+        simp [Int.natAbs_natCast]; omega
+    · rw [Finset.card_range]; exact le_of_eq hf_grace.symm
+  -- The source set: {i : Fin n | 0 < i.val}
+  let src := Finset.univ.filter (fun i : Fin n => 0 < i.val)
+  -- Each i > 0 gives an edge s(i, f i)
+  have hmem : ∀ i ∈ src, s(i, f i) ∈ G.edgeFinset := by
+    intro i hi
+    simp only [src, Finset.mem_filter, Finset.mem_univ, true_and] at hi
+    rw [SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet]
+    refine ⟨?_, Or.inl rfl⟩
+    intro h
+    have := hf_canon.2 i hi
+    have := congr_arg Fin.val h
+    omega
+  -- The map i ↦ s(i, f i) is injective on src
+  have hinj : Set.InjOn (fun i => s(i, f i)) ↑src := by
+    intro i hi j hj h
+    simp only [src, Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hi hj
+    rw [Sym2.eq_iff] at h
+    rcases h with ⟨rfl, _⟩ | ⟨hij, hfij⟩
+    · rfl
+    · have h1 : (f j).val < j.val := hf_canon.2 j hj
+      have h2 : (f i).val < i.val := hf_canon.2 i hi
+      have h3 : i.val = (f j).val := congr_arg Fin.val hij
+      have h4 : (f i).val = j.val := congr_arg Fin.val hfij
+      omega
+  -- G.edgeFinset = image of src under i ↦ s(i, f i)
+  have hG_img : G.edgeFinset = src.image (fun i => s(i, f i)) := by
+    ext e
+    simp only [Finset.mem_image, src, Finset.mem_filter, Finset.mem_univ, true_and]
+    constructor
+    · intro he
+      induction e using Sym2.inductionOn with
+      | hf u v =>
+        rw [SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet] at he
+        obtain ⟨hne, hf_or⟩ := he
+        rcases hf_or with hfu | hfv
+        · have hu : 0 < u.val := by
+            rcases Nat.eq_zero_or_pos u.val with h | h
+            · have hu0 : u = ⟨0, hn'⟩ := Fin.ext h
+              rw [hu0, hf_canon.1] at hfu; exact absurd (hu0.trans hfu) hne
+            · exact h
+          exact ⟨u, hu, by rw [hfu]⟩
+        · have hv : 0 < v.val := by
+            rcases Nat.eq_zero_or_pos v.val with h | h
+            · have hv0 : v = ⟨0, hn'⟩ := Fin.ext h
+              rw [hv0, hf_canon.1] at hfv; exact absurd (hv0.trans hfv) hne.symm
+            · exact h
+          exact ⟨v, hv, by rw [hfv, Sym2.eq_swap]⟩
+    · rintro ⟨i, hi, rfl⟩
+      exact hmem i (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hi⟩)
+  -- Edge count: |G.edgeFinset| = n - 1
+  have hm : G.edgeFinset.card = n - 1 := by
+    rw [hG_img, Finset.card_image_of_injOn hinj]
+    have hsrc : src = Finset.univ.erase ⟨0, hn'⟩ := by
+      ext i
+      simp only [src, Finset.mem_filter, Finset.mem_univ, true_and,
+                 Finset.mem_erase, Finset.mem_univ, and_true, ne_eq]
       constructor
-      · rintro ⟨u, v, hne, hf, rfl⟩
-        rcases hf with h | h
-        · use u; refine ⟨?_, ?_⟩
-          · rcases Nat.eq_zero_or_pos u.val with hz | hp; swap; exact hp
-            have : u = 0 := Fin.ext hz; rw [this, hf_canon.1] at h; exact (hne h.symm).elim
-          · rw [h, Sym2.eq_swap]; rfl
-        · use v; refine ⟨?_, ?_⟩
-          · rcases Nat.eq_zero_or_pos v.val with hz | hp; swap; exact hp
-            have : v = 0 := Fin.ext hz; rw [this, hf_canon.1] at h; exact (hne h.symm).elim
-          · rw [h]; rfl
-      · rintro ⟨i, hi, rfl⟩
-        refine ⟨i, f i, ?_, Or.inl rfl, rfl⟩
-        · intro heq; have hlt := hf_canon.2 i hi; rw [heq] at hlt; omega
-    rw [hS, Finset.card_image_of_injective]
-    · simp only [Finset.card_filter, Finset.card_univ]; omega
-    · intro i j hi hj heq
-      rw [Sym2.eq_iff] at heq
-      rcases heq with ⟨rfl, _⟩ | ⟨h1, h2⟩
-      · rfl
-      · have hlti := hf_canon.2 i hi
-        have hltj := hf_canon.2 j hj
-        rw [h1] at hltj; rw [h2] at hlti; omega
-  -- 2. Provide the labeling: id
+      · intro h heq
+        have := congr_arg Fin.val heq
+        simp at this; omega
+      · intro h
+        rcases Nat.eq_zero_or_pos i.val with h0 | h0
+        · exfalso; apply h; exact Fin.ext h0
+        · exact h0
+    rw [hsrc, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, Fintype.card_fin]
+  -- Identity labeling is graceful
   refine ⟨fun v => v.val, Fin.val_injective, ?_, ?_⟩
-  · intro v; rw [h_edge_card]; exact v.isLt.le_sub_one
-  -- 3. Show edge labels cover {1, ..., n-1}
-  rw [h_edge_card]
-  ext k
-  simp only [Finset.mem_image, SimpleGraph.mem_edgeFinset, treeGraphOfFunction, Finset.mem_Icc]
-  constructor
-  · rintro ⟨e, he, rfl⟩
-    rw [Sym2.lift_mk]
-    obtain ⟨u, v, hne, hf, rfl⟩ := he
-    rcases hf with rfl | rfl
-    · have hpos : u.val > 0 := by
-        rcases Nat.eq_zero_or_pos u.val with hz | hp; swap; exact hp
-        have : u = 0 := Fin.ext hz; rw [this, hf_canon.1] at hne; exact (hne rfl).elim
-      have hlt := hf_canon.2 u hpos; omega
-    · have hpos : v.val > 0 := by
-        rcases Nat.eq_zero_or_pos v.val with hz | hp; swap; exact hp
-        have : v = 0 := Fin.ext hz; rw [this, hf_canon.1] at hne; exact (hne rfl).elim
-      have hlt := hf_canon.2 v hpos; omega
-  · intro hk
-    have : k ∈ (Finset.univ.image (fun i : Fin n => (↑(f i).val - ↑i.val : ℤ).natAbs)) := by
-      let img := (Finset.univ.image (fun i : Fin n => (↑(f i).val - ↑i.val : ℤ).natAbs))
-      have hsub : img ⊆ Finset.range n := by
-        intro x hx; simp only [img, Finset.mem_image, Finset.mem_univ, true_and] at hx
-        obtain ⟨i, rfl⟩ := hx; simp only [Finset.mem_range]
-        have h1 := (f i).isLt
-        have h2 := i.isLt
-        omega
-      have heq : img = Finset.range n := by
-        apply Finset.eq_of_subset_of_card_le hsub
-        rw [hf_grace, Finset.card_range]
-      change k ∈ img; rw [heq]; simp only [Finset.mem_range]; omega
-    obtain ⟨i, hi_k⟩ : ∃ i, (↑(f i).val - ↑i.val : ℤ).natAbs = k := by
-      simp only [Finset.mem_image, Finset.mem_univ, true_and] at this; exact this
-    have hi : i.val > 0 := by
-      rcases Nat.eq_zero_or_pos i.val with hz | hp; swap; exact hp
-      exfalso; have : i = ⟨0, by omega⟩ := Fin.ext hz
-      rw [this, hf_canon.1] at hi_k; simp only [Nat.cast_zero, sub_self, Int.natAbs_zero] at hi_k
-      rw [← hi_k] at hk; omega
-    refine ⟨Quot.mk _ (i, f i), ?_, ?_⟩
-    · rw [SimpleGraph.mem_edgeFinset]
-      exact ⟨by intro heq; have hlt := hf_canon.2 i hi; rw [heq] at hlt; omega, Or.inl rfl⟩
-    · rw [Sym2.lift_mk, ← Int.natAbs_neg (↑i.val - ↑(f i).val), neg_sub]
-      exact hi_k
+  · intro v; rw [hm]; exact Nat.le_sub_one_of_lt v.isLt
+  · rw [hm]
+    have hedge_labels : G.edgeFinset.image (fun e =>
+        e.lift ⟨fun u v => Int.natAbs ((u.val : ℤ) - v.val),
+                fun u v => natAbs_sub_comm u.val v.val⟩) =
+        edgeLabelSet f \ {0} := by
+      rw [hG_img, Finset.image_image]
+      ext k
+      simp only [Finset.mem_image, src, Finset.mem_filter, Finset.mem_univ, true_and,
+                 Function.comp, Sym2.lift_mk, edgeLabelSet,
+                 Finset.mem_sdiff, Finset.mem_singleton]
+      constructor
+      · rintro ⟨i, hi, rfl⟩
+        refine ⟨⟨i, ?_⟩, ?_⟩
+        · exact (natAbs_sub_comm i.val (f i).val).symm
+        · intro h
+          simp only [Int.natAbs_eq_zero, sub_eq_zero] at h
+          have := hf_canon.2 i hi; push_cast at h; omega
+      · rintro ⟨⟨j, hj⟩, hne⟩
+        rcases Nat.eq_zero_or_pos j.val with h | h
+        · exfalso; apply hne
+          have hj0 : j = ⟨0, hn'⟩ := Fin.ext h
+          rw [hj0, hf_canon.1] at hj; simp at hj; exact hj.symm
+        · exact ⟨j, h, (natAbs_sub_comm j.val (f j).val).trans hj⟩
+    rw [hedge_labels, hlabels]
+    ext k
+    simp only [Finset.mem_sdiff, Finset.mem_range, Finset.mem_singleton, Finset.mem_Icc]
+    omega
 
 /--
 Theorem 3.1 (Iterative Descent):
@@ -208,12 +243,8 @@ For any tree function f with diameter ≥ 3, if f² is graceful, then f is grace
 -/
 theorem theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
     (h_diam : funcDiameter f ≥ 3) :
-  intro h_graceful_f2
-  unfold IsGracefulFunction at h_graceful_f2 ⊢
-  -- By Composition Lemma, the max label count is the same for f and f^2
-  have h_max := composition_lemma hn f h_tree
-  rw [h_max] at h_graceful_f2
-  exact h_graceful_f2
+    IsGracefulFunction (f ∘ f) → IsGracefulFunction f := by
+  sorry
 
 
 /--
@@ -245,32 +276,36 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
         | succ k ih => 
           rw [Function.iterate_succ_apply']
           simp at ih ⊢; rcases ih with h0 | hv
-          · right; rw [h0]; rfl
+          · right; rw [h0]
           · left; rw [hv]; exact hf_v
       have h2 : f^[2] ⟨0, hn⟩ = ⟨0, hn⟩ := by
-        rw [Function.iterate_two, hf0_v, hf_v]
+        rw [show f^[2] ⟨0, hn⟩ = f (f ⟨0, hn⟩) from rfl, hf0_v, hf_v]
       have h2v : f^[2] v = v := by
-        rw [Function.iterate_two, hf_v, hf0_v]
+        rw [show f^[2] v = f (f v) from rfl, hf_v, hf0_v]
       have h_cycle_prop : ∀ k, f^[2 * k] ⟨0, hn⟩ = ⟨0, hn⟩ ∧ f^[2 * k + 1] ⟨0, hn⟩ = v := by
         intro k; induction k with
         | zero => simp [hf0_v]
         | succ k ih =>
-          constructor
-          · rw [Nat.mul_succ, Function.iterate_add_apply, ih.1, h2]
-          · rw [Nat.mul_succ, Function.iterate_add_apply, ih.2, h2v]
+          have heven : f^[2 * (k + 1)] ⟨0, hn⟩ = ⟨0, hn⟩ := by
+            rw [Nat.mul_succ, Function.iterate_add_apply, h2, ih.1]
+          refine ⟨heven, ?_⟩
+          rw [show 2 * (k + 1) + 1 = 1 + 2 * (k + 1) from by omega,
+              Function.iterate_add_apply, Function.iterate_one, heven, hf0_v]
       have h_img : {⟨0, hn⟩, v} ⊆ iterateImage f (n - 1) := by
+        have hv_cycle : ∀ m, f^[2 * m] v = v := fun m => by
+          induction m with
+          | zero => simp
+          | succ m ihm => rw [Nat.mul_succ, Function.iterate_add_apply, h2v, ihm]
         intro x hx
         simp only [Finset.mem_insert, Finset.mem_singleton] at hx
         unfold iterateImage; simp only [Finset.mem_image, Finset.mem_univ, true_and]
         rcases hx with rfl | rfl
-        · -- Show 0 is in the image.
-          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · use ⟨0, hn⟩; rw [hk]; induction k with | zero => simp | succ k ih => rw [Nat.mul_succ, Function.iterate_add_apply, ih, h2]
-          · use v; rw [hk, Nat.add_comm, Function.iterate_add_apply]; induction k with | zero => simp [hf_v] | succ k ih => rw [Nat.mul_succ, Function.iterate_add_apply, ih, h2]
-        · -- Show v is in the image.
-          rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
-          · use v; rw [hk]; induction k with | zero => simp | succ k ih => rw [Nat.mul_succ, Function.iterate_add_apply, ih, h2v]
-          · use ⟨0, hn⟩; rw [hk]; induction k with | zero => simp [hf0_v] | succ k ih => rw [Nat.mul_succ, Function.iterate_add_apply, ih, h2]
+        · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+          · exact ⟨⟨0, hn⟩, by rw [hk, show k + k = 2 * k from by omega]; exact (h_cycle_prop k).1⟩
+          · exact ⟨v, by rw [hk, Function.iterate_add_apply]; simp [Function.iterate_one, hf_v, (h_cycle_prop k).1]⟩
+        · rcases Nat.even_or_odd (n - 1) with ⟨k, hk⟩ | ⟨k, hk⟩
+          · exact ⟨v, by rw [hk, show k + k = 2 * k from by omega]; exact hv_cycle k⟩
+          · exact ⟨⟨0, hn⟩, by rw [hk]; exact (h_cycle_prop k).2⟩
       have : (iterateImage f (n-1)).card = 1 := h_tree
       have h_card2 : ({⟨0, hn⟩, v} : Finset (Fin n)).card = 2 := by
         apply Finset.card_pair
@@ -281,32 +316,25 @@ theorem KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
     have h0 : (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val)) ⟨0, hn⟩ = 0 := by
       show Int.natAbs (↑(f ⟨0, hn⟩).val - ↑(0 : ℕ)) = 0
       rw [hf0]; simp
-    have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) = 
+    have : (Finset.univ.image (fun i : Fin n => Int.natAbs (↑(f i).val - ↑i.val))) =
            (Finset.range n) := by
       ext k
-      simp
+      simp only [Finset.mem_image, Finset.mem_univ, Finset.mem_range, true_and]
       constructor
-      · rintro ⟨i, rfl⟩; exact i.isLt
+      · rintro ⟨i, rfl⟩
+        have h1 := i.isLt
+        have h2 := (f i).isLt
+        omega
       · intro hk; rcases Nat.eq_zero_or_pos k with rfl | hp
-        · use ⟨0, hn⟩; exact h0
-        · obtain ⟨i, hi, h_abs⟩ : ∃ (i : Fin n), i.val > 0 ∧ (Int.natAbs (↑(f i).val - ↑i.val)) = k := by
-            let idx : Fin n := ⟨k, by omega⟩
-            use idx; constructor; · omega
-            have hf_idx : f idx = ⟨0, hn⟩ := h_star idx (by omega)
-            rw [hf_idx]; simp [idx]; omega
-          use i; exact h_abs
+        · exact ⟨⟨0, hn⟩, by rw [hf0]; simp⟩
+        · refine ⟨⟨k, by omega⟩, ?_⟩
+          have hfk : f ⟨k, by omega⟩ = ⟨0, hn⟩ := h_star ⟨k, by omega⟩ (by omega)
+          rw [hfk]; simp
     rw [this]
-    rw [this]
-    simp only [id_comp, Finset.card_range]
+    exact Finset.card_range n
+  · sorry
 
 
-
-
-  · -- General case using iterative descent
-    intro h_tree
-    -- By induction on m, f^[2^m] eventually becomes a constant function (a star).
-    -- Since stars are graceful and descent preserves gracefulness, f is graceful.
-    sorry
 
 
 
