@@ -37,4 +37,14 @@ theorem graceful_evaluation_proof (hn : 1 < n) (f : Fin n → Fin n) (σ : Equiv
     (h_grace : IsAlreadyGraceful (conjugate f σ)) :
     Int.natAbs (MvPolynomial.eval (fun i => ((σ i).val : ℤ)) (determinantalPolynomial f)) =
     (n - 1).factorial := by
+  rw [eval_det_poly hn f σ]
+  have h1 : Int.natAbs (∏ i : {i : Fin n // i.val > 0}, (((σ i.1).val : ℤ) - ((σ (f i.1)).val : ℤ))) =
+            ∏ i : {i : Fin n // i.val > 0}, Int.natAbs (((σ i.1).val : ℤ) - ((σ (f i.1)).val : ℤ)) := by
+    exact natAbs_prod univ (fun i => (((σ i.1).val : ℤ) - ((σ (f i.1)).val : ℤ)))
+  rw [h1]
+  -- We know that conjugate f σ = g.
+  let g := conjugate f σ
+  -- The product is over i > 0.
+  -- Notice that Int.natAbs (σ i.1 - σ (f i.1)) = Int.natAbs (j - g j) for j = σ i.1.
+  -- But we must construct an equivalence!
   sorry

@@ -71,9 +71,96 @@ theorem product_formula_even :
 /--
 Helper: Counting injections Fin k ↪ Fin n with monotone upper bounds.
 -/
-axiom count_perm_le_product (s : Fin n → ℕ) (h_mono : Monotone s) (h_bound : ∀ i, s i ≤ n) :
+theorem count_perm_le_product {n : ℕ} (s : Fin n → ℕ) (h_mono : Monotone s) (h_bound : ∀ i, s i ≤ n) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin n) => ∀ i, (σ i).val < s i)).card =
-    ∏ i, (s i - i.val)
+    ∏ i, (s i - i.val) := by
+  induction n with
+  | zero => 
+    have h_empty_prod : ∏ i : Fin 0, (s i - i.val) = 1 := Fintype.prod_empty
+    rw [h_empty_prod]
+    have h_perm_univ : (Finset.univ : Finset (Equiv.Perm (Fin 0))) = {Equiv.refl _} := rfl
+    rw [h_perm_univ]
+    have h_filter : ({Equiv.refl _} : Finset (Equiv.Perm (Fin 0))).filter (fun σ => ∀ i, (σ i).val < s i) = {Equiv.refl _} := by
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · rintro ⟨h1, _⟩; exact h1
+      · intro h1; rw [h1]; exact ⟨rfl, fun i => i.elim0⟩
+    rw [h_filter, Finset.card_singleton]
+  | succ k ih =>
+    have h_decomp : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)).card =
+        (s 0) * (Finset.univ.filter (fun τ : Equiv.Perm (Fin k) => ∀ j, (τ j).val < s (Fin.succ j) - 1)).card := by
+      have h_sum : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)).card =
+          ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+            (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i)).card := by
+        have h_bind : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)) =
+            (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)).biUnion
+            (fun v => Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i)) := by
+          ext σ
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_biUnion]
+          constructor
+          · intro hσ
+            use σ 0
+            refine ⟨by exact hσ 0, ⟨rfl, hσ⟩⟩
+          · rintro ⟨v, _, hvσ⟩
+            exact hvσ.2
+        rw [h_bind, Finset.card_biUnion]
+        intro v1 _ v2 _ hneq
+        rw [Finset.disjoint_left]
+        intro σ h1 h2
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at h1 h2
+        have eq1 := h1.1
+        have eq2 := h2.1
+        rw [← eq1, ← eq2] at hneq
+        exact hneq rfl
+      have h_sum_eval : ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+            (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i)).card =
+          ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+            (Finset.univ.filter (fun τ : Equiv.Perm (Fin k) => ∀ j, (τ j).val < s (Fin.succ j) - 1)).card := by
+        apply Finset.sum_congr rfl
+        intro v hv
+        -- Here we use the fact that assigning σ 0 = v leaves a remaining permutation τ on Fin k.
+        -- By succAboveEquiv_lt, the condition uniformly shifts by -1.
+        sorry
+      rw [h_sum, h_sum_eval, Finset.sum_const, nsmul_eq_mul]
+      congr 1
+      have h_bound0 : s 0 ≤ k + 1 := h_bound 0
+      have h_equiv : (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)) = 
+          (Finset.range (s 0)).image (fun x => ⟨x, by omega⟩) := by
+        ext x
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image, Finset.mem_range]
+        constructor
+        · intro h
+          exact ⟨x.val, h, Fin.ext rfl⟩
+        · rintro ⟨y, hy, rfl⟩
+          exact hy
+      rw [h_equiv, Finset.card_image_of_injective]
+      · exact Finset.card_range (s 0)
+      · intro a b hab
+        exact Fin.mk.inj hab
+    rw [h_decomp]
+    let s' : Fin k → ℕ := fun j => s (Fin.succ j) - 1
+    have h_mono' : Monotone s' := by
+      intro a b hab
+      have := h_mono (Fin.succ_le_succ hab)
+      omega
+    have h_bound' : ∀ j, s' j ≤ k := by
+      intro j
+      have := h_bound (Fin.succ j)
+      omega
+    rw [ih s' h_mono' h_bound']
+    -- Re-index the product
+    have h_prod : ∏ i : Fin (k + 1), (s i - i.val) = (s 0 - 0) * ∏ j : Fin k, (s (Fin.succ j) - (Fin.succ j).val) := by
+      exact Fin.prod_univ_succ (fun i => s i - i.val)
+    rw [h_prod]
+    have h_s0 : s 0 - 0 = s 0 := by omega
+    rw [h_s0]
+    congr 1
+    apply Finset.prod_congr rfl
+    intro j _
+    dsimp [s']
+    have : (Fin.succ j).val = j.val + 1 := by rfl
+    omega
 
 /--
 Explicit sorting permutation for the even case bounds.
@@ -113,27 +200,32 @@ lemma p_equiv_even_apply (m : ℕ) (i : Fin (2 * m + 1)) :
     s (p_equiv_even m i) = max (i.val + 1) (2 * m - i.val) := by
   intro s
   dsimp [s, p_equiv_even, p_fun_even]
-  split_ifs with h1 h2
-  · have h_lt : 2 * (m - 1 - i.val) + 1 < 2 * m := by omega
+  by_cases h1 : i.val < m
+  · rw [dif_pos h1]
+    dsimp
+    have h_lt : 2 * (m - 1 - i.val) + 1 < 2 * m := by omega
     rw [if_pos h_lt]
-    have : (2 * (m - 1 - i.val) + 1) / 2 = m - 1 - i.val := by omega
-    rw [this]
-    have : m + (m - 1 - i.val) + 1 = 2 * m - i.val := by omega
-    rw [this]
-    exact (max_eq_right (by omega)).symm
-  · have h_lt2 : 2 * (i.val - m) < 2 * m ↔ i.val < 2 * m := by omega
-    by_cases h_i : i.val < 2 * m
-    · rw [if_pos (by omega)]
-      have : 2 * (i.val - m) / 2 = i.val - m := by omega
-      rw [this]
-      have : m + (i.val - m) + 1 = i.val + 1 := by omega
-      rw [this]
-      exact (max_eq_left (by omega)).symm
-    · have : i.val = 2 * m := by omega
-      rw [if_neg (by omega)]
-      have : 2 * m + 1 = i.val + 1 := by omega
-      rw [this]
-      exact (max_eq_left (by omega)).symm
+    have h_div : (2 * (m - 1 - i.val) + 1) / 2 = m - 1 - i.val := by omega
+    rw [h_div]
+    have h_max : max (i.val + 1) (2 * m - i.val) = 2 * m - i.val := by exact max_eq_right (by omega)
+    rw [h_max]
+    omega
+  · rw [dif_neg h1]
+    dsimp
+    by_cases h2 : i.val < 2 * m
+    · have h_lt3 : 2 * (i.val - m) < 2 * m := by omega
+      rw [if_pos h_lt3]
+      have h_div2 : 2 * (i.val - m) / 2 = i.val - m := by omega
+      rw [h_div2]
+      have h_max2 : max (i.val + 1) (2 * m - i.val) = i.val + 1 := by exact max_eq_left (by omega)
+      rw [h_max2]
+      omega
+    · have h_eq : i.val = 2 * m := by omega
+      have h_ge2 : ¬(2 * (i.val - m) < 2 * m) := by omega
+      rw [if_neg h_ge2]
+      have h_max3 : max (i.val + 1) (2 * m - i.val) = i.val + 1 := by exact max_eq_left (by omega)
+      rw [h_max3]
+      omega
 
 /--
 Reordering lemma for permutation bounds.
