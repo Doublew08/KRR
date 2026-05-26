@@ -14,6 +14,48 @@ namespace KRR
 
 variable {m : ℕ}
 
+def mySuccAbove {k : ℕ} (v : Fin (k + 1)) (z : Fin k) : {x : Fin (k + 1) // x ≠ v} :=
+  if h : z.val < v.val then
+    ⟨⟨z.val, by omega⟩, by intro eq; have eq2 : z.val = v.val := congrArg Fin.val eq; omega⟩
+  else
+    ⟨⟨z.val + 1, by omega⟩, by intro eq; have eq2 : z.val + 1 = v.val := congrArg Fin.val eq; omega⟩
+
+def myPredAbove {k : ℕ} (v : Fin (k + 1)) (y : {x : Fin (k + 1) // x ≠ v}) : Fin k :=
+  if h : y.val.val < v.val then
+    ⟨y.val.val, by
+      have hy : y.val.val < k + 1 := y.val.isLt
+      omega⟩
+  else
+    ⟨y.val.val - 1, by
+      have hy : y.val.val < k + 1 := y.val.isLt
+      have h_ne : y.val.val ≠ v.val := by intro eq; exact y.2 (Fin.ext eq)
+      omega⟩
+
+def myEquiv {k : ℕ} (v : Fin (k + 1)) : Fin k ≃ {x : Fin (k + 1) // x ≠ v} :=
+  { toFun := mySuccAbove v
+    invFun := myPredAbove v
+    left_inv := fun z => by
+      ext
+      dsimp [mySuccAbove]
+      split_ifs with h
+      · dsimp [myPredAbove]
+        rw [dif_pos h]
+      · dsimp [myPredAbove]
+        have h_not : ¬(z.val + 1 < v.val) := by omega
+        simp only [dif_neg h_not]
+        try omega
+    right_inv := fun y => by
+      ext
+      have hy_ne : y.val.val ≠ v.val := by intro eq; exact y.2 (Fin.ext eq)
+      dsimp [myPredAbove]
+      split_ifs with h
+      · dsimp [mySuccAbove]
+        rw [dif_pos h]
+      · dsimp [mySuccAbove]
+        have h_not : ¬(y.val.val - 1 < v.val) := by omega
+        rw [dif_neg h_not]
+        dsimp; omega }
+
 private lemma prod_Fin_descFactorial {n : ℕ} (m : ℕ) (h : m ≤ n) :
     ∏ k : Fin m, (n - (k : ℕ)) = n.descFactorial m := by
   induction m with
@@ -76,11 +118,14 @@ theorem count_perm_le_product {n : ℕ} (s : Fin n → ℕ) (h_mono : Monotone s
     ∏ i, (s i - i.val) := by
   induction n with
   | zero => 
-    have h_empty_prod : ∏ i : Fin 0, (s i - i.val) = 1 := Fintype.prod_empty
+    have h_empty_prod : ∏ i : Fin 0, (s i - i.val) = 1 := rfl
     rw [h_empty_prod]
-    have h_perm_univ : (Finset.univ : Finset (Equiv.Perm (Fin 0))) = {Equiv.refl _} := rfl
+    have h_perm_univ : (Finset.univ : Finset (Equiv.Perm (Fin 0))) = {1} := by
+      ext x
+      simp only [Finset.mem_univ, Finset.mem_singleton, true_iff]
+      exact Subsingleton.elim x 1
     rw [h_perm_univ]
-    have h_filter : ({Equiv.refl _} : Finset (Equiv.Perm (Fin 0))).filter (fun σ => ∀ i, (σ i).val < s i) = {Equiv.refl _} := by
+    have h_filter : ({1} : Finset (Equiv.Perm (Fin 0))).filter (fun σ => ∀ i, (σ i).val < s i) = {1} := by
       ext x
       simp only [Finset.mem_filter, Finset.mem_singleton]
       constructor
@@ -91,7 +136,7 @@ theorem count_perm_le_product {n : ℕ} (s : Fin n → ℕ) (h_mono : Monotone s
     have h_decomp : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)).card =
         (s 0) * (Finset.univ.filter (fun τ : Equiv.Perm (Fin k) => ∀ j, (τ j).val < s (Fin.succ j) - 1)).card := by
       have h_sum : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)).card =
-          ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+          ∑ v ∈ Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
             (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i)).card := by
         have h_bind : (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => ∀ i, (σ i).val < s i)) =
             (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)).biUnion
@@ -106,6 +151,7 @@ theorem count_perm_le_product {n : ℕ} (s : Fin n → ℕ) (h_mono : Monotone s
             exact hvσ.2
         rw [h_bind, Finset.card_biUnion]
         intro v1 _ v2 _ hneq
+        dsimp [Function.onFun]
         rw [Finset.disjoint_left]
         intro σ h1 h2
         simp only [Finset.mem_filter, Finset.mem_univ, true_and] at h1 h2
@@ -113,39 +159,161 @@ theorem count_perm_le_product {n : ℕ} (s : Fin n → ℕ) (h_mono : Monotone s
         have eq2 := h2.1
         rw [← eq1, ← eq2] at hneq
         exact hneq rfl
-      have h_sum_eval : ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+      have h_sum_eval : ∑ v ∈ Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
             (Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i)).card =
-          ∑ v in Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
+          ∑ v ∈ Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0),
             (Finset.univ.filter (fun τ : Equiv.Perm (Fin k) => ∀ j, (τ j).val < s (Fin.succ j) - 1)).card := by
         apply Finset.sum_congr rfl
         intro v hv
-        -- Here we use the fact that assigning σ 0 = v leaves a remaining permutation τ on Fin k.
-        -- By succAboveEquiv_lt, the condition uniformly shifts by -1.
-        sorry
-      rw [h_sum, h_sum_eval, Finset.sum_const, nsmul_eq_mul]
+        let e1 : Fin k ≃ {x : Fin (k+1) // x ≠ 0} := myEquiv 0
+        let e2 : Fin k ≃ {x : Fin (k+1) // x ≠ v} := myEquiv v
+        apply Finset.card_bij (fun σ hσ => 
+          let e_sub : {x : Fin (k+1) // x ≠ 0} ≃ {x : Fin (k+1) // x ≠ v} :=
+            { toFun := fun x => ⟨σ x.val, by
+                intro eq
+                have h0 := (Finset.mem_filter.mp hσ).2.1
+                have := σ.injective (eq.trans h0.symm)
+                exact x.2 this⟩
+              invFun := fun y => ⟨σ.symm y.val, by
+                intro eq
+                have h0 := (Finset.mem_filter.mp hσ).2.1
+                have : y.val = v := by
+                  have h_symm : σ (σ.symm y.val) = y.val := Equiv.apply_symm_apply σ y.val
+                  rw [eq] at h_symm
+                  rw [← h_symm, h0]
+                exact y.2 this⟩
+              left_inv := fun x => Subtype.ext (Equiv.symm_apply_apply σ x.val)
+              right_inv := fun y => Subtype.ext (Equiv.apply_symm_apply σ y.val) }
+          e1.trans (e_sub.trans e2.symm))
+        · intro σ hσ
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ ⊢
+          intro j
+          have hv_lt : v.val < s 0 := (Finset.mem_filter.mp hv).2
+          have h_mono0 : s 0 ≤ s (Fin.succ j) := h_mono (Fin.zero_le _)
+          have h_lt : (σ (Fin.succ j)).val < s (Fin.succ j) := hσ.2 (Fin.succ j)
+          have h0 : σ 0 = v := hσ.1
+          have h_neq : (σ (Fin.succ j)).val ≠ v.val := by
+            intro eq
+            have eq_fin : σ (Fin.succ j) = σ 0 := by ext; rw [eq, h0]
+            have h_eq := σ.injective eq_fin
+            revert h_eq
+            exact Fin.succ_ne_zero j
+          dsimp [e1, e2, myEquiv, myPredAbove, mySuccAbove]
+          split_ifs with h_v
+          · change (σ (Fin.succ j)).val < v.val at h_v
+            change (σ (Fin.succ j)).val < s (Fin.succ j) - 1
+            omega
+          · change ¬((σ (Fin.succ j)).val < v.val) at h_v
+            change (σ (Fin.succ j)).val - 1 < s (Fin.succ j) - 1
+            omega
+        · intro a1 ha1 a2 ha2 eq
+          apply Equiv.ext; intro x
+          by_cases hx : x = 0
+          · rw [hx]
+            have h1 := (Finset.mem_filter.mp ha1).2.1
+            have h2 := (Finset.mem_filter.mp ha2).2.1
+            rw [h1, h2]
+          · have h_eq_fun := Equiv.ext_iff.mp eq
+            let y : {z : Fin (k+1) // z ≠ 0} := ⟨x, hx⟩
+            have h_j := h_eq_fun (e1.symm y)
+            simp only [Equiv.trans_apply, Equiv.apply_symm_apply] at h_j
+            have h_j2 := congrArg e2 h_j
+            simp only [Equiv.apply_symm_apply] at h_j2
+            have h_j3 := congrArg Subtype.val h_j2
+            exact h_j3
+        · intro τ hτ
+          let a : Equiv.Perm (Fin (k + 1)) :=
+            { toFun := fun x => if h : x = 0 then v else (e2 (τ (e1.symm ⟨x, h⟩))).val
+              invFun := fun y => if h : y = v then 0 else (e1 (τ.symm (e2.symm ⟨y, h⟩))).val
+              left_inv := fun x => by
+                ext
+                dsimp
+                by_cases hx : x = 0
+                · simp only [hx, dif_pos]
+                · have h_τ_val : (e2 (τ (e1.symm ⟨x, hx⟩))).val ≠ v := (e2 _).2
+                  simp only [hx, h_τ_val, not_false_eq_true, dif_neg]
+                  have h_eta1 : (⟨(e2 (τ (e1.symm ⟨x, hx⟩))).val, h_τ_val⟩ : {y : Fin (k+1) // y ≠ v}) = e2 (τ (e1.symm ⟨x, hx⟩)) := Subtype.ext rfl
+                  rw [h_eta1]
+                  simp only [Equiv.symm_apply_apply, Equiv.apply_symm_apply]
+              right_inv := fun y => by
+                ext
+                dsimp
+                by_cases hy : y = v
+                · simp only [hy, dif_pos]
+                · have h_τ_val : (e1 (τ.symm (e2.symm ⟨y, hy⟩))).val ≠ 0 := (e1 _).2
+                  simp only [hy, h_τ_val, not_false_eq_true, dif_neg]
+                  have h_eta1 : (⟨(e1 (τ.symm (e2.symm ⟨y, hy⟩))).val, h_τ_val⟩ : {x : Fin (k+1) // x ≠ 0}) = e1 (τ.symm (e2.symm ⟨y, hy⟩)) := Subtype.ext rfl
+                  rw [h_eta1]
+                  simp only [Equiv.symm_apply_apply, Equiv.apply_symm_apply] }
+          have ha_v : a 0 = v := by ext; simp [a]
+          have ha_lt : ∀ i, (a i).val < s i := by
+            intro i
+            dsimp [a]
+            split_ifs with h
+            · rw [h]; exact (Finset.mem_filter.mp hv).2
+            · have h_τ_lt := (Finset.mem_filter.mp hτ).2 (e1.symm ⟨i, h⟩)
+              have hi_eq : (e1.symm ⟨i, h⟩).succ = i := by
+                ext
+                dsimp [e1, myEquiv, myPredAbove]
+                have hi_ne : i.val ≠ 0 := by intro eq; exact h (Fin.ext eq)
+                omega
+              rw [hi_eq] at h_τ_lt
+              have hv_lt : v.val < s 0 := (Finset.mem_filter.mp hv).2
+              have h_mono_i : s 0 ≤ s i := h_mono (Fin.zero_le _)
+              dsimp [e2, myEquiv, mySuccAbove]
+              split_ifs with h_τ_v
+              · change (τ (e1.symm ⟨i, h⟩)).val < s i
+                omega
+              · change (τ (e1.symm ⟨i, h⟩)).val + 1 < s i
+                omega
+          have ha : a ∈ Finset.univ.filter (fun σ : Equiv.Perm (Fin (k + 1)) => σ 0 = v ∧ ∀ i, (σ i).val < s i) := by
+            simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+            exact ⟨ha_v, ha_lt⟩
+          exact ⟨a, ha, by
+            ext x
+            have h_x_ne : (e1 x).val ≠ 0 := (e1 x).2
+            have h_ax : a (e1 x) = (e2 (τ x)).val := by
+              dsimp [a]
+              rw [dif_neg h_x_ne]
+              have h_eta : (⟨(e1 x).val, h_x_ne⟩ : {y : Fin (k+1) // y ≠ 0}) = e1 x := Subtype.ext rfl
+              rw [h_eta, Equiv.symm_apply_apply]
+            have h_ax_prop : a (e1 x) ≠ v := by rw [h_ax]; exact (e2 (τ x)).2
+            have h_eq : (⟨a (e1 x), h_ax_prop⟩ : {y : Fin (k+1) // y ≠ v}) = e2 (τ x) := Subtype.ext h_ax
+            have h_res : e2.symm ⟨a (e1 x), h_ax_prop⟩ = τ x := by
+              calc
+                e2.symm ⟨a (e1 x), h_ax_prop⟩ = e2.symm (e2 (τ x)) := congrArg e2.symm h_eq
+                _ = τ x := Equiv.symm_apply_apply e2 (τ x)
+            exact congrArg Fin.val h_res⟩
+      rw [h_sum, h_sum_eval, Finset.sum_const, smul_eq_mul]
       congr 1
       have h_bound0 : s 0 ≤ k + 1 := h_bound 0
-      have h_equiv : (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)) = 
-          (Finset.range (s 0)).image (fun x => ⟨x, by omega⟩) := by
-        ext x
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image, Finset.mem_range]
-        constructor
-        · intro h
-          exact ⟨x.val, h, Fin.ext rfl⟩
-        · rintro ⟨y, hy, rfl⟩
-          exact hy
-      rw [h_equiv, Finset.card_image_of_injective]
-      · exact Finset.card_range (s 0)
-      · intro a b hab
-        exact Fin.mk.inj hab
+      have h_card_v : (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)).card = s 0 := by
+        have h_eq : (Finset.univ.filter (fun v : Fin (k + 1) => v.val < s 0)).card = (Finset.range (s 0)).card := by
+          apply Finset.card_bij (fun v _ => v.val)
+          · intro v hv; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
+            exact Finset.mem_range.mpr hv
+          · intro _ _ _ _ h; exact Fin.ext h
+          · intro y hy
+            have hy' := Finset.mem_range.mp hy
+            simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+            exact ⟨⟨y, by omega⟩, hy', rfl⟩
+        rw [h_eq, Finset.card_range]
+      rw [h_card_v]
     rw [h_decomp]
     let s' : Fin k → ℕ := fun j => s (Fin.succ j) - 1
     have h_mono' : Monotone s' := by
       intro a b hab
-      have := h_mono (Fin.succ_le_succ hab)
+      have hab' : Fin.succ a ≤ Fin.succ b := by
+        have : a.val ≤ b.val := hab
+        have h_succ_a : (Fin.succ a).val = a.val + 1 := rfl
+        have h_succ_b : (Fin.succ b).val = b.val + 1 := rfl
+        omega
+      have := h_mono hab'
+      dsimp [s']
       omega
     have h_bound' : ∀ j, s' j ≤ k := by
       intro j
+      dsimp [s']
       have := h_bound (Fin.succ j)
       omega
     rw [ih s' h_mono' h_bound']
@@ -192,8 +360,8 @@ lemma p_fun_even_inj (m : ℕ) : Function.Injective (p_fun_even m) := by
     have : a.val = b.val := by omega
     exact Fin.eq_of_val_eq this
 
-def p_equiv_even (m : ℕ) : Equiv.Perm (Fin (2 * m + 1)) :=
-  Equiv.ofBijective (p_fun_even m) (Fintype.injective_iff_bijective.mp (p_fun_even_inj m))
+noncomputable def p_equiv_even (m : ℕ) : Equiv.Perm (Fin (2 * m + 1)) :=
+  Equiv.ofBijective (p_fun_even m) (Finite.injective_iff_bijective.mp (p_fun_even_inj m))
 
 lemma p_equiv_even_apply (m : ℕ) (i : Fin (2 * m + 1)) :
     let s : Fin (2 * m + 1) → ℕ := fun j => if j.val < 2 * m then m + j.val / 2 + 1 else 2 * m + 1
