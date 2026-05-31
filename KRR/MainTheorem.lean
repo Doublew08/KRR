@@ -13,10 +13,13 @@ universe u
 variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /--
-The Main Theorem of KRR: Every tree is graceful.
-Formalized by reducing the graph tree property to a functional tree function property.
+**Placeholder axiom — NOT a proof.** The KRR conjecture is stated here as an
+`axiom`, i.e. assumed, not derived. Track A (the functional reformulation) is an
+incomplete attempt at proving this statement and still contains `sorry`s and
+auxiliary axioms; the conjecture itself remains open. This declaration exists
+only to express the target statement, and must not be read as a verified result.
 -/
-axiom krr_conjecture_main (T : SimpleGraph (Fin n)) (h_tree : T.IsTree) :
-    ∃ f : Fin n → Fin n, T.IsGracefulLabeling f
+axiom krr_conjecture_main (T : SimpleGraph (Fin n)) [DecidableRel T.Adj] (h_tree : T.IsTree) :
+    IsGraceful T
 
 end KRR
