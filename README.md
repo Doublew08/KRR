@@ -1,12 +1,13 @@
-# 🌳 A machine-checked gap in Step 5 of Gnang's KRR proof
+# 🌳 Kotzig–Ringel–Rosa (KRR) Conjecture in Lean 4
 
 <p align="center">
   <img src="images/logo.png" width="120" alt="KRR Logo">
 </p>
 
 <p align="center">
-  <b>A Lean 4 / Mathlib formalization that the Step-5 contradiction in Gnang's (2022)</b><br/>
-  <i>proof of the Kotzig–Ringel–Rosa (Graceful Tree) conjecture does not go through.</i>
+  <b>A Lean 4 / Mathlib formalization of Gnang's functional-reformulation approach to the</b><br/>
+  <i>Graceful Tree Conjecture — an attempt that turned into a machine-checked refutation</i><br/>
+  <i>of the contradiction in the proof's Step 5.</i>
 </p>
 
 <p align="center">
@@ -20,9 +21,12 @@
 
 ## TL;DR
 
-This repository contains a **machine-checked analysis of Step 5** of Gnang's proof of the
-Composition Lemma underlying the Kotzig–Ringel–Rosa conjecture (arXiv:2202.03178 v3). Step 5 is a
-proof by contradiction. We formalize its two halves and show the contradiction is **spurious**:
+This project began as a Lean 4 formalization of Gnang's functional-reformulation proof of the
+Kotzig–Ringel–Rosa conjecture (arXiv:2202.03178 v3). Building the algebraic machinery (grid ideal,
+determinantal polynomial, telescoping remainder) to verify the Composition Lemma turned up a
+problem in its hardest step (Step 5), and the formalization became a **machine-checked refutation of
+that step's contradiction**. Step 5 is a proof by contradiction; we formalize its two halves and
+show the contradiction is **spurious**:
 
 1. **Part A is a theorem.** The prescribed transposition `τ` is a genuine graph automorphism of
    `G_g`, so it fixes the determinantal polynomial `P_g` — *unconditionally*
