@@ -27,9 +27,9 @@ and there he states `Aut(polynomial) ⊆ Aut(canonical representative)`. Since `
 permutation–stable, `rename τ P_g = P_g` descends to the canonical representative. So Part A forces
 `τ ∈ Aut(canonical representative of P_g)`, refuting Part B.
 
-This file makes the refutation machine-checked: under Step 5's premise (`g` graceful) `P_g` is a
-**τ-invariant polynomial with a nonzero canonical representative**. Part B claims no such object
-exists; here it is. The Step 5 contradiction is therefore *spurious*.
+Under Step 5's premise (`g` graceful) `P_g` is a **τ-invariant polynomial with a nonzero canonical
+representative**. Part B claims no such object exists; here it is. So the Step 5 contradiction does
+not hold.
 
 Combined with `remainder_in_ideal_iff_Pg_in_ideal` and `remainder_not_in_ideal`
 (`Step5NoShortcut.lean`, `Telescoping.lean`): under the premise, `R_{f,g} ∉ I` is genuinely
@@ -70,7 +70,7 @@ the determinantal polynomial `P_g` is simultaneously:
 * fixed by `τ`  (`rename τ P_g = P_g`), hence `τ` fixes its canonical representative, and
 * outside `gridIdeal`, i.e. its canonical representative is **nonzero**.
 
-So `τ ∈ Aut(canonical representative of P_g)` with that representative nonvanishing — exactly the
+So `τ ∈ Aut(canonical representative of P_g)` with that representative nonvanishing, the
 configuration Gnang's Part B rules out. The Step 5 contradiction does not hold. -/
 theorem partB_conclusion_false [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
     (hτ : ∀ i, g (τ i) = τ (g i))
@@ -79,14 +79,13 @@ theorem partB_conclusion_false [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm
       ∧ fullDeterminantalPolynomial g ∉ gridIdeal n :=
   ⟨rename_fullDet_eq_of_aut g τ hτ, fullDet_not_mem_gridIdeal_of_graceful g σ hσ⟩
 
-/-! ### Closing the interpretive escapes: the descent to the canonical representative is rigorous
+/-! ### The descent to the canonical representative
 
-A possible objection to the refutation above is that Part A's invariance is at the *polynomial*
-level (`rename τ P_g = P_g`) whereas Part B speaks of the *canonical representative*
-— and perhaps `rename τ` does not descend to it. It does. The grid ideal is permutation–stable,
-so `rename τ` acts on the quotient `MvPolynomial / gridIdeal` (= the space of canonical
-representatives) and Part A's invariance descends verbatim. We make this fully machine-checked,
-so the refutation no longer depends on any reading of Gnang's prose. -/
+Part A's invariance is at the *polynomial* level (`rename τ P_g = P_g`), whereas Part B speaks of
+the *canonical representative*, and one might worry `rename τ` does not descend to it. It does. The
+grid ideal is permutation–stable, so `rename τ` acts on the quotient `MvPolynomial / gridIdeal` (the
+space of canonical representatives), and Part A's invariance descends verbatim. This is
+machine-checked, so the refutation does not depend on any reading of Gnang's prose. -/
 
 /-- `gridIdeal` is stable under variable permutation: a permutation of indices maps a grid point
 to a grid point, so vanishing on the grid is preserved. -/

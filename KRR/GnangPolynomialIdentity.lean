@@ -24,7 +24,7 @@ Together these show the object Step 5 manipulates (`P_g`, in the binomial form, 
 are then a partition of the pair set `{(u,v) : u < v}` into `v ≤ f(n−1)` / `v` a sibling with
 `u ≤ f(n−1)` / `v` a sibling with `f(n−1) < u < v`; on each block the slide `g` agrees with `f`
 resp. `f²`, so the blocks reassemble into the single product `∏_{u<v}` over all pairs. The algebraic
-content of that reassembly — binomial pair `↦` squared difference — is exactly the lemma below; the
+content of that reassembly (a binomial pair becomes a squared difference) is the lemma below; the
 remaining step is the (labelling–dependent) bookkeeping that the three blocks tile all pairs.
 -/
 

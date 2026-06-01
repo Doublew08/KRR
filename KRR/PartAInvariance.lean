@@ -14,7 +14,7 @@ Gnang's prescribed `τ = (f(n-1), v)` (v a sibling of the deepest leaf `n-1`) is
 in `G_f`, but the slide construction makes `f(n-1)` and `n-1` *sibling leaves* of `G_g`, so
 `τ ∈ Aut(G_g)` and this lemma applies.
 
-Key idea: `P_g = ∏_{i<j} (X_j - X_i)(e_j - e_i)` with `e_k = (X_{g k} - X_k)^2`.
+Write `P_g = ∏_{i<j} (X_j - X_i)(e_j - e_i)` with `e_k = (X_{g k} - X_k)^2`.
 Under any permutation the two sign flips cancel *pairwise*; `τ ∈ Aut(G_g)` gives
 `rename τ e_k = e_{τ k}`.
 -/
@@ -97,7 +97,7 @@ theorem rename_fullDet_eq_of_aut (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
 
 `g` is obtained from `f` by sliding the sibling group `f⁻¹({f L})` of the deepest leaf `L`
 one edge toward the root: `g i = f² i` on that group, else `f i`. Equivalently
-`slide f L i = if f i = f L then f (f i) else f i`. We prove that Gnang's prescribed
+`slide f L i = if f i = f L then f (f i) else f i`. Gnang's prescribed
 transposition `τ = (f L, L)` is a graph automorphism of `G_g`, hence (by
 `rename_fullDet_eq_of_aut`) fixes `P_g`. -/
 

@@ -8,7 +8,7 @@ set_option linter.style.longLine false
 
 This file removes the last hand-checked step in matching our objects to the source: that Gnang's
 three-block expression for `P_g` (arXiv:2202.03178 v3) equals `fullDeterminantalPolynomial`
-of the slide. We prove that `edgeWeightsPolynomial (slide f L)` decomposes as the product of three
+of the slide. `edgeWeightsPolynomial (slide f L)` decomposes as the product of three
 blocks indexed by the pair set `{(i,j) : i < j}`, partitioned by sibling membership of the larger
 and smaller index, with the slide replaced by `f` resp. `f²` exactly as Gnang writes it:
 
