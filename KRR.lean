@@ -6,4 +6,8 @@ import KRR.Polynomial
 import KRR.CompositionLemma
 import KRR.MainTheorem
 import KRR.Counterexample
-import KRR.GnangTranspositionGap
+import KRR.PartAInvariance
+import KRR.Step5NoShortcut
+import KRR.Step5FlawWitness
+import KRR.GnangPolynomialIdentity
+import KRR.GnangBlockDecomposition
