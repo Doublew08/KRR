@@ -34,16 +34,13 @@ show the contradiction is **spurious**:
 
 2. **Part B's conclusion is false.** Under Step 5's own premise (`g` graceful), the canonical
    representative of `P_g` is a **nonzero `τ`-invariant** polynomial — exactly the object Part B
-   (line 2173) declares impossible
-   ([`Step5FlawWitness.lean`](KRR/Step5FlawWitness.lean), `partB_2173_false_canonical`).
+   declares impossible
+   ([`Step5FlawWitness.lean`](KRR/Step5FlawWitness.lean), `partB_conclusion_false_canonical`).
 
-3. **No internal patch exists.** Under the premise, `R_{f,g} ∉ I` is provably true, and Step 5's
-   target `R_{f,g} ∈ I` is logically equivalent to the lemma's own conclusion `P_g ∈ I`
-   ([`Step5NoShortcut.lean`](KRR/Step5NoShortcut.lean)). Any valid argument must prove the
+3. **The argument cannot be repaired internally.** Under the premise, `R_{f,g} ∉ I` is provably
+   true, and Step 5's target `R_{f,g} ∈ I` is logically equivalent to the lemma's own conclusion
+   `P_g ∈ I` ([`Step5NoShortcut.lean`](KRR/Step5NoShortcut.lean)). Any valid argument must prove the
    Composition Lemma outright.
-
-Everything compiles against Mathlib and, by `#print axioms`, depends only on the three standard
-axioms `propext`, `Classical.choice`, `Quot.sound`; there is **no `sorry` and no custom axiom**.
 
 > **Scope.** This is a gap in *one proof*. We do **not** claim KRR is false, nor that the
 > Composition Lemma is false (it is almost certainly true), nor that it cannot prove KRR by other
@@ -65,12 +62,12 @@ Lemma*; its hardest step (Step 5) is a proof by contradiction.
   edge-weights `eₖ = (X_{g k} − X_k)²`, an automorphism permutes the `eₖ`, and the two sign flips
   cancel. **This is `rename_fullDet_eq_of_aut`.**
 
-- **Part B (refuted, machine-checked).** Gnang argues (lines 2129–2174, via the Monomial Support
-  Lemma and complementary-labeling symmetry) that `τ ∉ Aut(canonical rep of P_g)` (line 2173). But
-  Part A gives `rename τ P_g = P_g` exactly, and the grid ideal is permutation-stable
-  (`rename_mem_gridIdeal`), so `rename` commutes with grid-reduction and `τ ∈ Aut(canonical rep)`.
-  `partB_2173_false_canonical` exhibits, under the premise, a **nonzero `τ`-invariant** canonical
-  representative — exactly what line 2173 declares impossible. The Option-3 "symmetry-broadening
+- **Part B (refuted, machine-checked).** Gnang argues (via the Monomial Overlapping Lemma and the
+  complementary-labeling symmetry) that `τ ∉ Aut(canonical rep of P_g)`. But Part A gives
+  `rename τ P_g = P_g` exactly, and the grid ideal is permutation-stable (`rename_mem_gridIdeal`),
+  so `rename` commutes with grid-reduction and `τ ∈ Aut(canonical rep)`.
+  `partB_conclusion_false_canonical` exhibits, under the premise, a **nonzero `τ`-invariant**
+  canonical representative — exactly what Part B declares impossible. The Option-3 "symmetry-broadening
   cancellation" Gnang dismisses is precisely the Vandermonde sign cancellation that *does* make `τ`
   an automorphism.
 
@@ -87,8 +84,8 @@ theorem rename_fullDet_eq_of_aut (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
     MvPolynomial.rename τ (fullDeterminantalPolynomial g) = fullDeterminantalPolynomial g
 
 -- Under the premise, P_g's canonical representative is τ-invariant AND nonzero,
--- contradicting Gnang's line 2173 (KRR/Step5FlawWitness.lean)
-theorem partB_2173_false_canonical [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
+-- contradicting Part B's conclusion (KRR/Step5FlawWitness.lean)
+theorem partB_conclusion_false_canonical [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
     (hτ : ∀ i, g (τ i) = τ (g i))
     (σ : Equiv.Perm (Fin n)) (hσ : IsAlreadyGraceful (conjugate g σ)) :
     rename τ (fullDeterminantalPolynomial g) - fullDeterminantalPolynomial g ∈ gridIdeal n
@@ -97,9 +94,9 @@ theorem partB_2173_false_canonical [NeZero n] (g : Fin n → Fin n) (τ : Equiv.
 
 ### Scope — no counterexample to KRR exists here
 
-Gnang's contradiction lives in the regime where `f` is **ungraceful**. A brute-force search of *all*
+Gnang's contradiction lives in the case where `f` is **ungraceful**. A brute-force search of *all*
 semigroup trees (rooted at `0`, every non-root pointing nearer the root) finds **zero ungraceful
-`f`** at `n = 5, 6, 7` (24/120/720 trees). So the relevant regime is empty for every small `n`, and
+`f`** at `n = 5, 6, 7` (24/120/720 trees). So the relevant case is empty for every small `n`, and
 this gap **cannot** be turned into a tree counterexample to KRR. It is a flaw in the *proof*; the
 statement is plausibly true but unproved by this route.
 
@@ -120,9 +117,9 @@ graph TD
     G --> P
     P --> T["Telescoping.lean"]
     P --> X["PartAInvariance.lean — Part A"]
-    P --> ID["GnangPolynomialIdentity.lean — faithfulness"]
+    P --> ID["GnangPolynomialIdentity.lean — matches the source"]
     ID --> BL["GnangBlockDecomposition.lean — 3-block = V·W_g"]
-    T --> NS["Step5NoShortcut.lean — no internal patch"]
+    T --> NS["Step5NoShortcut.lean — no internal repair"]
     X --> FW["Step5FlawWitness.lean — Part B refuted"]
     T --> Y["Counterexample.lean — worked n=3"]
 ```
@@ -139,7 +136,7 @@ graph TD
 | [`PartAInvariance.lean`](KRR/PartAInvariance.lean) | **Part A**: graph automorphisms fix `P_g` |
 | [`Step5FlawWitness.lean`](KRR/Step5FlawWitness.lean) | **Part B refuted**; grid ideal permutation-stable |
 | [`Step5NoShortcut.lean`](KRR/Step5NoShortcut.lean) | `R_{f,g} ∈ I ⟺ P_g ∈ I`; no internal contradiction |
-| [`GnangPolynomialIdentity.lean`](KRR/GnangPolynomialIdentity.lean) | Faithfulness: `fullDet = F_f` (paper l.1006) + binomial form |
+| [`GnangPolynomialIdentity.lean`](KRR/GnangPolynomialIdentity.lean) | Matches the source: `fullDet = F_f` (Gnang's gracefulness criterion) + binomial form |
 | [`GnangBlockDecomposition.lean`](KRR/GnangBlockDecomposition.lean) | Gnang's three index-blocks reassemble into `V·W_g` |
 | [`Counterexample.lean`](KRR/Counterexample.lean) | Worked `n=3` evaluation: `R_{f,f²} ∉ I_grid` |
 
@@ -164,8 +161,8 @@ lake exe cache get   # download precompiled Mathlib (recommended)
 lake build
 ```
 
-**Prerequisites:** [Lean 4 / elan](https://leanprover.github.io/lean4/doc/setup.html).
-Pinned to Lean `v4.29.1` / Mathlib `v4.29.1`.
+Requires [Lean 4 (elan)](https://leanprover.github.io/lean4/doc/setup.html); the toolchain is
+pinned by `lean-toolchain`.
 
 ---
 

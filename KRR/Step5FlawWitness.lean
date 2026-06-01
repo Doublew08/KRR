@@ -4,26 +4,27 @@ import KRR.Telescoping
 set_option linter.style.longLine false
 
 /-!
-# Witness: Gnang's Step 5 "Part B" conclusion (arXiv:2202.03178 v3, line 2173) is false
+# Witness: the conclusion of Gnang's Step 5 "Part B" is false
 
-Step 5 of Gnang's proof of the Composition Lemma is a proof by contradiction. Under the
-premise `f` ungraceful (`P_f ∈ I`) ∧ `g` graceful (`P_g ∉ I`) it derives, for the prescribed
-transposition `τ = (f(n-1), v)` (`v` a sibling leaf of the deepest leaf `n-1`):
+In Gnang's proof of the Composition Lemma (arXiv:2202.03178 v3), Step 5 is a proof by
+contradiction. Under the premise `f` ungraceful (`P_f ∈ I`) ∧ `g` graceful (`P_g ∉ I`) it
+derives, for the prescribed transposition `τ = (f(n-1), v)` (`v` a sibling leaf of the deepest
+leaf `n-1`):
 
-* **Part A** (lines 2066–2079): `τ` fixes the canonical representative of `R_{f,g}` — i.e.
-  `τ ∈ Aut(canonical representative of P_g)`. Verified: `rename_fullDet_eq_of_aut` shows
-  `rename τ P_g = P_g` *unconditionally*, since `τ` is a genuine graph automorphism of `G_g`
+* **Part A** (the transposition-invariance step): `τ` fixes the canonical representative of
+  `R_{f,g}` — i.e. `τ ∈ Aut(canonical representative of P_g)`. Verified: `rename_fullDet_eq_of_aut`
+  shows `rename τ P_g = P_g` *unconditionally*, since `τ` is a genuine graph automorphism of `G_g`
   (the slide turns `f(n-1)` and every sibling into leaf–children of `f²(n-1)`).
 
-* **Part B** (lines 2095–2174): concludes the *opposite*,
-  `τ ∉ Aut(Canonical Representative of P_g)` (line 2173), via a three–option case analysis
-  whose Option 3 (cross–summand "symmetry broadening" cancellations) is dismissed using the
-  complementary labeling symmetry.
+* **Part B** (the subsequent case analysis): concludes the *opposite*,
+  `τ ∉ Aut(Canonical Representative of P_g)`, via a three–option argument whose Option 3
+  (cross–summand "symmetry broadening" cancellations) is dismissed using the complementary
+  labeling symmetry.
 
 These two are contradictory **about the same object**: Gnang's own canonical representative is
-the grid/Lagrange form `∑_h P_g(h) L_h(x)` (paper Example, lines 1409–1449), and there he states
-`Aut(polynomial) ⊆ Aut(canonical representative)`. Since `gridIdeal` is permutation–stable,
-`rename τ P_g = P_g` descends to the canonical representative. So Part A forces
+the grid/Lagrange form `∑_h P_g(h) L_h(x)` (his Example following the Monomial Overlapping Lemma),
+and there he states `Aut(polynomial) ⊆ Aut(canonical representative)`. Since `gridIdeal` is
+permutation–stable, `rename τ P_g = P_g` descends to the canonical representative. So Part A forces
 `τ ∈ Aut(canonical representative of P_g)`, refuting Part B.
 
 This file makes the refutation machine-checked: under Step 5's premise (`g` graceful) `P_g` is a
@@ -62,7 +63,7 @@ theorem fullDet_not_mem_gridIdeal_of_graceful [NeZero n] (g : Fin n → Fin n)
       (fun a b h => σ.injective (Fin.val_injective (by exact_mod_cast h))))
     (eval_edgeWeightsPolynomial_ne_zero_of_graceful g σ hσ) hzero
 
-/-- **Part B (line 2173) is false.** Under Step 5's premise (`g` graceful) and with Gnang's
+/-- **Part B's conclusion is false.** Under Step 5's premise (`g` graceful) and with Gnang's
 prescribed transposition `τ` — a graph automorphism of `G_g` (`∀ i, g (τ i) = τ (g i)`) —
 the determinantal polynomial `P_g` is simultaneously:
 
@@ -71,7 +72,7 @@ the determinantal polynomial `P_g` is simultaneously:
 
 So `τ ∈ Aut(canonical representative of P_g)` with that representative nonvanishing — exactly the
 configuration Gnang's Part B rules out. The Step 5 contradiction does not hold. -/
-theorem partB_2173_false [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
+theorem partB_conclusion_false [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
     (hτ : ∀ i, g (τ i) = τ (g i))
     (σ : Equiv.Perm (Fin n)) (hσ : IsAlreadyGraceful (conjugate g σ)) :
     rename τ (fullDeterminantalPolynomial g) = fullDeterminantalPolynomial g
@@ -81,7 +82,7 @@ theorem partB_2173_false [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin 
 /-! ### Closing the interpretive escapes: the descent to the canonical representative is rigorous
 
 A possible objection to the refutation above is that Part A's invariance is at the *polynomial*
-level (`rename τ P_g = P_g`) whereas Part B (line 2173) speaks of the *canonical representative*
+level (`rename τ P_g = P_g`) whereas Part B speaks of the *canonical representative*
 — and perhaps `rename τ` does not descend to it. It does. The grid ideal is permutation–stable,
 so `rename τ` acts on the quotient `MvPolynomial / gridIdeal` (= the space of canonical
 representatives) and Part A's invariance descends verbatim. We make this fully machine-checked,
@@ -108,19 +109,19 @@ theorem rename_mem_gridIdeal_iff [NeZero n] (τ : Equiv.Perm (Fin n)) (P : MvPol
 /-- **Aut(polynomial) ⊆ Aut(canonical representative)** for the relevant case: if `τ` fixes `P`
 as a polynomial, it fixes the canonical representative of `P` (their difference lies in
 `gridIdeal`, i.e. they agree on the grid). This is the inclusion Gnang states in his Example
-(lines 1409–1449); the descent is along the permutation–stable ideal. -/
+following the Monomial Overlapping Lemma; the descent is along the permutation–stable ideal. -/
 theorem aut_fixes_canonicalRep_of_aut (τ : Equiv.Perm (Fin n)) (P : MvPolynomial (Fin n) ℤ)
     (h : rename τ P = P) : rename τ P - P ∈ gridIdeal n := by
   rw [h, sub_self]; exact Submodule.zero_mem _
 
-/-- **Part B (line 2173) is false — at the level of the canonical representative.** Under Step 5's
+/-- **Part B's conclusion is false — at the level of the canonical representative.** Under Step 5's
 premise (`g` graceful) with Gnang's prescribed graph automorphism `τ`, the canonical
 representative of `P_g` is `τ`-invariant (`rename τ P_g - P_g ∈ gridIdeal`) **and** nonzero
 (`P_g ∉ gridIdeal`). That is exactly `τ ∈ Aut(canonical representative of P_g)` with the
-representative nonvanishing — the configuration line 2173 declares impossible. This statement is
+representative nonvanishing — the configuration Part B declares impossible. This statement is
 phrased entirely in Gnang's own canonical-representative language, so it refutes Part B under
 *any* reading of its prose. -/
-theorem partB_2173_false_canonical [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
+theorem partB_conclusion_false_canonical [NeZero n] (g : Fin n → Fin n) (τ : Equiv.Perm (Fin n))
     (hτ : ∀ i, g (τ i) = τ (g i))
     (σ : Equiv.Perm (Fin n)) (hσ : IsAlreadyGraceful (conjugate g σ)) :
     rename τ (fullDeterminantalPolynomial g) - fullDeterminantalPolynomial g ∈ gridIdeal n

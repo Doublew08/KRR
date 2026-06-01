@@ -3,24 +3,24 @@ import KRR.DeterminantalPolynomial
 set_option linter.style.longLine false
 
 /-!
-# Faithfulness: our `fullDeterminantalPolynomial` is exactly Gnang's gracefulness polynomial
+# Source correspondence: our `fullDeterminantalPolynomial` is exactly Gnang's gracefulness polynomial
 
 A referee's first attack on a formalization-based refutation is *"is your formal object actually the
 paper's object?"* This file closes that gap for the polynomial at the heart of Step 5, mapping our
 `fullDeterminantalPolynomial f = vandermonde · edgeWeights` to the two forms Gnang writes.
 
-* **Gnang's `F_f` (arXiv:2202.03178 v3, eq. at line 1006)** — the polynomial whose non-membership in
-  the grid ideal *characterizes gracefulness* (line 1011, `G_f` graceful ⟺ `F_f ≢ 0 mod {(x_k)ⁿ}`):
+* **Gnang's `F_f` (arXiv:2202.03178 v3)** — the polynomial whose non-membership in
+  the grid ideal *characterizes gracefulness* (`G_f` graceful ⟺ `F_f ≢ 0 mod {(x_k)ⁿ}`):
   `F_f = ∏_{i<j} (x_j − x_i)·((x_{f j} − x_j)² − (x_{f i} − x_i)²)`.
   `fullDet_eq_Gnang_Ff` proves `fullDeterminantalPolynomial f = F_f`.
 
-* **Gnang's binomial / "telescoping" form (the `P_f`, `P_g` of lines 1692, 1710)** — every squared
+* **Gnang's binomial / "telescoping" form (the `P_f`, `P_g` in the proof of the Composition Lemma)** — every squared
   difference is written as a `t ∈ {0,1}` product of binomials
   `∏_{t∈{0,1}} (x_{h v} − x_v + (−1)ᵗ (x_{h u} − x_u))`.
   `edgeWeights_eq_binomial_tproduct` proves this binomial form equals our `edgeWeights`, for *any* `h`.
 
 Together these show the object Step 5 manipulates (`P_g`, in the binomial form, after the slide
-`h = g`) is exactly `fullDeterminantalPolynomial g`. Gnang's three index–blocks (lines 1712–1726)
+`h = g`) is exactly `fullDeterminantalPolynomial g`. Gnang's three index–blocks
 are then a partition of the pair set `{(u,v) : u < v}` into `v ≤ f(n−1)` / `v` a sibling with
 `u ≤ f(n−1)` / `v` a sibling with `f(n−1) < u < v`; on each block the slide `g` agrees with `f`
 resp. `f²`, so the blocks reassemble into the single product `∏_{u<v}` over all pairs. The algebraic
@@ -43,7 +43,7 @@ lemma prod_range_two_sign (a b : MvPolynomial (Fin n) ℤ) :
   ring
 
 /-- **Binomial form = edge-weight form.** Gnang's binomial-pair product (the form in which `P_f` and
-`P_g` are written, lines 1692/1710) equals our `edgeWeightsPolynomial`, for any `h : Fin n → Fin n`.
+`P_g` are written) equals our `edgeWeightsPolynomial`, for any `h : Fin n → Fin n`.
 Specialised to `h = g = slide f L` this is the `P_g` of Step 5. -/
 theorem edgeWeights_eq_binomial_tproduct (h : Fin n → Fin n) :
     edgeWeightsPolynomial h
@@ -55,8 +55,8 @@ theorem edgeWeights_eq_binomial_tproduct (h : Fin n → Fin n) :
   refine Finset.prod_congr rfl (fun i _ => Finset.prod_congr rfl (fun j _ => ?_))
   exact (prod_range_two_sign _ _).symm
 
-/-- **`fullDeterminantalPolynomial f` = Gnang's `F_f` (eq. line 1006).** The single product form
-whose non-membership in `gridIdeal` is Gnang's gracefulness criterion (line 1011). -/
+/-- **`fullDeterminantalPolynomial f` = Gnang's `F_f`.** The single product form
+whose non-membership in `gridIdeal` is Gnang's gracefulness criterion. -/
 theorem fullDet_eq_Gnang_Ff (f : Fin n → Fin n) :
     fullDeterminantalPolynomial f
       = ∏ i : Fin n, ∏ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),

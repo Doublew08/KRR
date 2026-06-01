@@ -4,10 +4,10 @@ import KRR.PartAInvariance
 set_option linter.style.longLine false
 
 /-!
-# Faithfulness, final piece: Gnang's three index–blocks reassemble into `P_g`
+# Source correspondence, final piece: Gnang's three index–blocks reassemble into `P_g`
 
-This file removes the last hand-checked step of the faithfulness audit: that Gnang's three-block
-expression for `P_g` (arXiv:2202.03178 v3, lines 1712–1726) equals `fullDeterminantalPolynomial`
+This file removes the last hand-checked step in matching our objects to the source: that Gnang's
+three-block expression for `P_g` (arXiv:2202.03178 v3) equals `fullDeterminantalPolynomial`
 of the slide. We prove that `edgeWeightsPolynomial (slide f L)` decomposes as the product of three
 blocks indexed by the pair set `{(i,j) : i < j}`, partitioned by sibling membership of the larger
 and smaller index, with the slide replaced by `f` resp. `f²` exactly as Gnang writes it:
@@ -18,7 +18,7 @@ and smaller index, with the slide replaced by `f` resp. `f²` exactly as Gnang w
 
 The only hypothesis is Gnang's WLOG labelling `hlab`: the siblings carry the largest labels, i.e.
 if `i` is a sibling and `i < j` then `j` is a sibling. This is exactly what makes the fourth case
-(`i` sibling, `j` not) empty, so three blocks suffice — matching Gnang's lines 1644–1652.
+(`i` sibling, `j` not) empty, so three blocks suffice — matching Gnang's labeling convention.
 
 Multiplying by the Vandermonde factor turns this into the literal identity `P_g (3-block) = V·W_g`.
 -/
@@ -65,7 +65,7 @@ lemma mem_pairSet_order {p : Fin n × Fin n} (hp : p ∈ pairSet n) : p.1.val < 
 
 /-- **Gnang's three-block decomposition of `P_g`.** Under the WLOG labelling `hlab` (siblings carry
 the largest labels), `edgeWeightsPolynomial (slide f L)` equals the product of Gnang's three blocks
-(lines 1712–1726). Times the Vandermonde factor this is the literal `P_g (3-block) = V·W_g`. -/
+Times the Vandermonde factor this is the literal `P_g (3-block) = V·W_g`. -/
 theorem edgeWeights_slide_three_blocks (f : Fin n → Fin n) (L : Fin n)
     (hlab : ∀ i j : Fin n, f i = f L → i.val < j.val → f j = f L) :
     edgeWeightsPolynomial (slide f L)

@@ -6,7 +6,7 @@ set_option linter.style.longLine false
 /-!
 # Part A of Gnang's Step 5 is a theorem: graph automorphisms fix `P_g`
 
-Gnang's "transposition invariance" (arXiv:2202.03178 v3, lines 2066–2079) is, correctly
+Gnang's "transposition invariance" (arXiv:2202.03178 v3) is, correctly
 read, the claim that a graph automorphism `τ` of `G_g` fixes the determinantal polynomial
 `P_g = fullDeterminantalPolynomial g`. We prove this in full generality.
 

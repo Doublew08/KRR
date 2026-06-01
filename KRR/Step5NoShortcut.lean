@@ -6,7 +6,7 @@ import KRR.Telescoping
 Gnang's Step 5 is a proof by contradiction: assume `f` ungraceful (`P_f ∈ I`) and `g`
 graceful (`P_g ∉ I`), and derive a contradiction. His route is to show that the remainder
 `R_{f,g} = P_g − P_f` has a vanishing canonical representative, i.e. `R_{f,g} ∈ I` (via the
-`τ`-symmetry argument of lines 2066–2174).
+`τ`-symmetry argument).
 
 The theorem below shows that goal is **logically equivalent to the conclusion** `P_g ∈ I`
 (`g` ungraceful). So "find another contradiction inside this framework" is not a smaller task
