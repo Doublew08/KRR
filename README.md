@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml"><img src="https://github.com/Doublew08/KRR/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/status-Gnang%20Step%205%20refuted-red" alt="status">
+  <img src="https://img.shields.io/badge/status-Composition%20Lemma%20proof%20refuted-red" alt="status">
   <img src="https://img.shields.io/badge/Lean-4.29.1-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.29.1-purple" alt="Mathlib Version">
 </p>
