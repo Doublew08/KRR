@@ -145,6 +145,17 @@ graph TD
 
 ---
 
+## Provenance
+
+This repository began as a full Lean formalization of Gnang's functional-reformulation proof.
+That earlier scaffolding — the incomplete Track-A proof attempt, with open `sorry`s and placeholder
+axioms — was removed from `master` to keep the library axiom-free, but is preserved in git history at
+the [`formalization-attempt`](https://github.com/Doublew08/KRR/releases/tag/formalization-attempt)
+tag. The clean algebraic pipeline that survives here is the part of that attempt the refutation grew
+out of.
+
+---
+
 ## Build
 
 ```bash
