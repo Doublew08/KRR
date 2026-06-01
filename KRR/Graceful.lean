@@ -237,21 +237,8 @@ theorem isGraceful_bridge (hn : 1 < n) (f : Fin n → Fin n)
     simp only [Finset.mem_sdiff, Finset.mem_range, Finset.mem_singleton, Finset.mem_Icc]
     omega
 
-/--
-Theorem 3.1 (Iterative Descent):
-For any tree function f with diameter ≥ 3, if f² is graceful, then f is graceful.
--/
-axiom theorem_3_1 (hn : 1 < n) (f : Fin n → Fin n) (h_tree : IsTreeFunction f)
-    (h_diam : funcDiameter f ≥ 3) :
-    IsGracefulFunction (f ∘ f) → IsGracefulFunction f
-
-
-/--
-This will be proved by the chain:
-  Phase 3 (Functional Reformulation) → Phase 4 (Graceful Expansion) →
-  Phase 5 (Polynomial Machinery) → Phase 6 (Composition Lemma) →
-  Phase 7 (Main Theorem via iterated composition to constant function). -/
-lemma KRR_Conjecture_functional_star (hn : 0 < n) (f : Fin n → Fin n) 
+/-- Star trees are graceful: if every non-root vertex points at the root, `f` is graceful. -/
+lemma KRR_Conjecture_functional_star (hn : 0 < n) (f : Fin n → Fin n)
     (h_tree : IsTreeFunction f) (h_star : ∀ i, i.val > 0 → f i = (⟨0, hn⟩ : Fin n)) : 
     IsGracefulFunction f := by
   use Equiv.refl (Fin n)
@@ -327,9 +314,6 @@ lemma KRR_Conjecture_functional_star (hn : 0 < n) (f : Fin n → Fin n)
         rw [hfk]; simp
   rw [this]
   exact Finset.card_range n
-
-axiom KRR_Conjecture_functional (hn : 0 < n) (f : Fin n → Fin n) :
-    IsTreeFunction f → IsGracefulFunction f
 
 
 
