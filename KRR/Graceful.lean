@@ -9,8 +9,8 @@ import KRR.Basic
 # KRR Phase 2: Graceful Labeling
 
 This module defines graceful labelings in two equivalent ways:
-1. **Functional form** (primary): A relabeling `σ` of `f : Fin n → Fin n` is graceful
-   if the induced absolute-difference edge labels are all distinct and cover `{0,...,n-1}`.
+1. **Functional form** (primary): A relabeling $\sigma$ of `f : Fin n → Fin n` is graceful
+   if the induced absolute-difference edge labels are all distinct and cover $\{0,\ldots,n-1\}$.
 2. **SimpleGraph form** (final theorem statement): For bridging to Mathlib's `IsTree`.
 
 The functional form is used throughout the proof. The SimpleGraph form is only
@@ -18,7 +18,7 @@ used in the final KRR theorem statement.
 
 ## Main definitions
 
-* `KRR.IsGracefulRelabeling` — σfσ⁻¹ has n distinct edge labels
+* `KRR.IsGracefulRelabeling` — $\sigma f \sigma^{-1}$ has $n$ distinct edge labels
 * `KRR.IsGracefulFunction` — some relabeling of f is graceful
 * `KRR.starIsGraceful` — constant functions (stars) are graceful
 
@@ -32,24 +32,24 @@ namespace KRR
 variable {n : ℕ}
 
 /-- The set of induced absolute subtractive edge labels for `f : Fin n → Fin n`.
-This is `{|f(i) - i| : i ∈ ℤₙ}`, the set of absolute differences between
+This is $\{|f(i) - i| : i \in \mathbb{Z}_n\}$, the set of absolute differences between
 each vertex and its parent. -/
 def edgeLabelSet (f : Fin n → Fin n) : Finset ℕ :=
   Finset.univ.image (fun i : Fin n => Int.natAbs ((f i).val - i.val))
 
 /-- A function `f : Fin n → Fin n` is "already gracefully labeled" if the induced
-absolute subtractive edge labels are all distinct, i.e. `|edgeLabelSet f| = n`. -/
+absolute subtractive edge labels are all distinct, i.e. `(edgeLabelSet f).card = n`. -/
 def IsAlreadyGraceful (f : Fin n → Fin n) : Prop :=
   (edgeLabelSet f).card = n
 
-/-- A relabeling `σ` of `f` produces `σ ∘ f ∘ σ⁻¹`, which is a conjugation by
-a permutation. The functional digraph of `σfσ⁻¹` is isomorphic to that of `f`
+/-- A relabeling $\sigma$ of `f` produces `σ ∘ f ∘ σ⁻¹`, which is a conjugation by
+a permutation. The functional digraph of $\sigma f \sigma^{-1}$ is isomorphic to that of `f`
 but with relabeled vertices. -/
 def conjugate (f : Fin n → Fin n) (σ : Equiv.Perm (Fin n)) : Fin n → Fin n :=
   σ ∘ f ∘ σ.symm
 
-/-- A function `f` is graceful if there exists a permutation `σ` such that
-`σfσ⁻¹` has `n` distinct induced absolute subtractive edge labels.
+/-- A function `f` is graceful if there exists a permutation $\sigma$ such that
+$\sigma f \sigma^{-1}$ has $n$ distinct induced absolute subtractive edge labels.
 This matches the paper's definition. -/
 def IsGracefulFunction (f : Fin n → Fin n) : Prop :=
   ∃ σ : Equiv.Perm (Fin n), IsAlreadyGraceful (conjugate f σ)
@@ -66,14 +66,14 @@ def complementMap (_hn : 0 < n) : Equiv.Perm (Fin n) where
 
 This is Example 3.1 from the paper. A "functional star" is the graph of
 a constant function `f(i) = c` for all `i`. When `c = 0`, the function
-is already gracefully labeled because the edge labels are `{0, 1, ..., n-1}`.
+is already gracefully labeled because the edge labels are $\{0, 1, \ldots, n-1\}$.
 -/
 
 /-- The constant-zero function on `Fin n`. -/
 def constZero (hn : 0 < n) : Fin n → Fin n := fun _ => ⟨0, hn⟩
 
-/-- The edge labels of the constant-zero function are `{0, 1, ..., n-1}`.
-Specifically, `|f(i) - i| = |0 - i| = i` for each `i ∈ Fin n`. -/
+/-- The edge labels of the constant-zero function are $\{0, 1, \ldots, n-1\}$.
+Specifically, $|f(i) - i| = |0 - i| = i$ for each `i : Fin n`. -/
 theorem constZero_edgeLabelSet (hn : 0 < n) :
     edgeLabelSet (constZero hn) = Finset.univ.image (fun i : Fin n => i.val) := by
   simp [edgeLabelSet, constZero]
@@ -103,8 +103,8 @@ lemma natAbs_sub_comm (a b : ℕ) :
   rw [← Int.natAbs_neg, neg_sub]
 
 /-- Graceful labeling of a `SimpleGraph`: an injective vertex labeling
-`f : V → {0,...,m}` where `m = |E(G)|` such that the induced edge labels
-`{|f(u) - f(v)| : {u,v} ∈ E(G)}` are distinct and cover `{1,...,m}`.
+$f : V \to \{0,\ldots,m\}$ where $m = |E(G)|$ such that the induced edge labels
+$\{|f(u) - f(v)| : \{u,v\} \in E(G)\}$ are distinct and cover $\{1,\ldots,m\}$.
 This is the classical statement used in the final KRR theorem. -/
 def IsGraceful {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [inst : DecidableRel G.Adj] : Prop :=
